@@ -30,20 +30,21 @@ def make_dna_triplets(string):
     return [string[start:start+3] for start in range(0, len(string), 3)]
 
 
-def codon_optimize(name, orf, codon_table):
+def codon_optimize(name, orf, codon_table, forced):
     """
     Checks if a given sequence starts with the start codon ('ATG') and promts you if it doesn't.
     Optimizes codons to most frequently used from codon table.
     """
-    forced = False
 
     if orf[:3] != "ATG":
-        cont_prompt = input("Sequence with id `{0}` is not ORF, do you want to continue anyway? (Y/n): ".format(name))
-    
-        if cont_prompt.upper() == "Y" or cont_prompt.upper() == "YES" or cont_prompt == "":
-            forced = True
-        else:
-            return False, forced
+        if not forced:
+            cont_prompt = input("Sequence with id `{0}` is not ORF, do you want to continue anyway? (Y/n): ".format(name))
+        
+            if cont_prompt.upper() == "Y" or cont_prompt.upper() == "YES" or cont_prompt == "":
+                forced = True
+            else:
+                forced = False
+                return False, forced
 
     optimized_orf = ""
 
@@ -96,22 +97,24 @@ def main():
 
     # Arguments
     parser = argparse.ArgumentParser(description=description)
-    parser.add_argument("-p","--protein", action="store_true", help="Use this flag when working with protein sequences", required=False)
-    parser.add_argument("-f","--file", help="Path to target fasta file", required=True)
+    parser.add_argument("-i","--input", help="Path to input 'fasta' file", required=True)
     parser.add_argument("-t","--table",help="Path to codon usage table in csv format: 'aminoacid,triplet,value')", required=True)
-    parser.add_argument("-s", "--save", help="Path for output fasta file", required=False)
+    parser.add_argument("-p","--protein", action="store_true", help="Use this flag when working with protein sequences", required=False)
+    parser.add_argument("-o", "--output", help="Path for output fasta file", required=False)
+    parser.add_argument("-f","--force", action="store_true", help="Use this flag to omit any prompts", required=False)
+
     args = parser.parse_args()
 
     # Variables
     current_dir = os.path.dirname(os.path.realpath(__file__))
-    path_fasta = "{0}/{1}".format(current_dir, args.file)
+    path_fasta = "{0}/{1}".format(current_dir, args.input)
     path_table = "{0}/{1}".format(current_dir, args.table)
     codon_table = pandas.read_csv(path_table, header=None)
     sequences = open_fasta(path_fasta)
 
-    if args.save:
-        path_save = "{0}/{1}".format(current_dir, args.save)
-        msg_saved = "Output saved to `{0}`".format(args.save)
+    if args.output:
+        path_save = "{0}/{1}".format(current_dir, args.output)
+        msg_saved = "Output saved to `{0}`".format(args.output)
 
     if args.protein:
         reverse_translations = {}
@@ -123,7 +126,7 @@ def main():
 
         string = "\n".join(["{0}|OPTIMIZED\n{1}\n".format(k, v) for k, v in reverse_translations.items()])
 
-        if args.save:
+        if args.output:
             writer(string, path_save)
             print(msg_saved)
         else:
@@ -131,11 +134,14 @@ def main():
     
     else:
         optimized_orfs = {}
+        string = ""
 
         for id, sequence in sequences.items():
-            optimized_orfs[id] = codon_optimize(id, sequence, codon_table)
+            if args.forced:
+                optimized_orfs[id] = codon_optimize(id, sequence, codon_table, True)
+            else:
+                optimized_orfs[id] = codon_optimize(id, sequence, codon_table, False)
 
-        string = ""
         for k, v in optimized_orfs.items():
             if v[0]:
                 k += "|OPTIMIZED"
@@ -143,7 +149,7 @@ def main():
                     k += "|forced"
                 string += "{0}\n{1}\n\n".format(k, v[0])
 
-        if args.save:
+        if args.output:
             writer(string, path_save)
             print(msg_saved)
         else:

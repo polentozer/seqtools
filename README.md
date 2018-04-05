@@ -15,9 +15,9 @@ aminoacid,dna_triplet,value
 
 ### Usage
 ```bash
-# reverse-translate a protein sequence and print output
+# reverse-translate and codon-optimize a protein sequence and print the output
 ./seqtools -pf test_data/prot.fasta -t test_data/table.csv
 
-# codon-optimize a DNA sequence and save output to a file
+# codon-optimize a DNA sequence and save the output to a file
 ./seqtools -f test_data/dna.fasta -t test_data/table.csv -s test.fasta
 ```
