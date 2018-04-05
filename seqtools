@@ -3,6 +3,7 @@
 import argparse
 import os
 
+# Checking for 'pandas' package
 try:
     import pandas
 except ImportError:
@@ -45,6 +46,8 @@ def codon_optimize(name, orf, codon_table, forced):
             else:
                 forced = False
                 return False, forced
+    else:
+        forced = False
 
     optimized_orf = ""
 
@@ -59,12 +62,24 @@ def codon_optimize(name, orf, codon_table, forced):
     return optimized_orf, forced
 
 
-def writer(string, path):
+def writer(dictionary, path):
     """
     Simple function for writing `.fasta` files.
     """
-    with open(path, 'w') as file_out:
-        file_out.write(string)
+    string = ""
+
+    for k, v in dictionary.items():
+            if v[0]:
+                k += "|OPTIMIZED"
+                if v[1]:
+                    k += "|forced"
+                string += "{0}\n{1}\n\n".format(k, v[0])
+
+    if path:
+        with open(path, 'w') as file_out:
+            file_out.write(string)
+    else:
+        return string
 
 
 def open_fasta(file_input_path):
@@ -112,48 +127,41 @@ def main():
     codon_table = pandas.read_csv(path_table, header=None)
     sequences = open_fasta(path_fasta)
 
+    # Reading SAVE argument
     if args.output:
         path_save = "{0}/{1}".format(current_dir, args.output)
         msg_saved = "Output saved to `{0}`".format(args.output)
 
+    # Protein translation
     if args.protein:
         reverse_translations = {}
 
         for id, sequence in sequences.items():
-            reverse_translations[id] = ""
+            reverse_translations[id] = ["", False]
             for amino in sequence:
-                reverse_translations[id] += reverse_translate(amino, codon_table)
-
-        string = "\n".join(["{0}|OPTIMIZED\n{1}\n".format(k, v) for k, v in reverse_translations.items()])
+                reverse_translations[id][0] += reverse_translate(amino, codon_table)
 
         if args.output:
-            writer(string, path_save)
+            writer(reverse_translations, path_save)
             print(msg_saved)
         else:
-            print("\nCodon optimized reverse translation:\n\n{0}".format(string))
+            print(writer(reverse_translations, False))
     
+    # DNA optimization
     else:
         optimized_orfs = {}
-        string = ""
 
         for id, sequence in sequences.items():
-            if args.forced:
+            if args.force:
                 optimized_orfs[id] = codon_optimize(id, sequence, codon_table, True)
             else:
                 optimized_orfs[id] = codon_optimize(id, sequence, codon_table, False)
 
-        for k, v in optimized_orfs.items():
-            if v[0]:
-                k += "|OPTIMIZED"
-                if v[1]:
-                    k += "|forced"
-                string += "{0}\n{1}\n\n".format(k, v[0])
-
         if args.output:
-            writer(string, path_save)
+            writer(optimized_orfs, path_save)
             print(msg_saved)
         else:
-            print("\nCodon optimized ORFs:\n\n{0}".format(string))
+            print(writer(optimized_orfs, False))
 
 
 if __name__ == "__main__":
