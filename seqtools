@@ -62,7 +62,7 @@ def codon_optimize(name, orf, codon_table, forced):
     return optimized_orf, forced
 
 
-def writer(dictionary, path):
+def writer(dictionary, path=None):
     """
     Simple function for writing `.fasta` files.
     """
@@ -103,6 +103,27 @@ def open_fasta(file_input_path):
     return sequence_dictionary
 
 
+def protein_to_dna(sequences, codon_table):
+    reverse_translations = {}
+
+    for id, sequence in sequences.items():
+        reverse_translations[id] = ["", None]
+
+        for amino in sequence:
+            reverse_translations[id][0] += reverse_translate(amino, codon_table)
+    
+    return reverse_translations
+
+
+def optimize_dna(sequences, codon_table, forced):
+    optimized_orfs = {}
+
+    for id, sequence in sequences.items():
+        optimized_orfs[id] = codon_optimize(id, sequence, codon_table, forced)
+    
+    return optimized_orfs
+
+
 def main():
     """
     Main function with argument parsing.
@@ -115,9 +136,8 @@ def main():
     parser.add_argument("-i","--input", help="Path to input 'fasta' file", required=True)
     parser.add_argument("-t","--table",help="Path to codon usage table in csv format: 'aminoacid,triplet,value')", required=True)
     parser.add_argument("-p","--protein", action="store_true", help="Use this flag when working with protein sequences", required=False)
-    parser.add_argument("-o", "--output", help="Path for output fasta file", required=False)
+    parser.add_argument("-o", "--output", help="Name for the output fasta file", required=False)
     parser.add_argument("-f","--force", action="store_true", help="Use this flag to omit any prompts", required=False)
-
     args = parser.parse_args()
 
     # Variables
@@ -127,41 +147,21 @@ def main():
     codon_table = pandas.read_csv(path_table, header=None)
     sequences = open_fasta(path_fasta)
 
-    # Reading SAVE argument
+    # Protein translation
+    if args.protein:
+        solution = protein_to_dna(sequences, codon_table)
+
+    elif not args.protein:
+        solution = optimize_dna(sequences, codon_table, args.force)
+
+    # Saving/Printing solution(s)
     if args.output:
         path_save = "{0}/{1}".format(current_dir, args.output)
         msg_saved = "Output saved to `{0}`".format(args.output)
-
-    # Protein translation
-    if args.protein:
-        reverse_translations = {}
-
-        for id, sequence in sequences.items():
-            reverse_translations[id] = ["", False]
-            for amino in sequence:
-                reverse_translations[id][0] += reverse_translate(amino, codon_table)
-
-        if args.output:
-            writer(reverse_translations, path_save)
-            print(msg_saved)
-        else:
-            print(writer(reverse_translations, False))
-    
-    # DNA optimization
+        writer(solution, path_save)
+        print(msg_saved)
     else:
-        optimized_orfs = {}
-
-        for id, sequence in sequences.items():
-            if args.force:
-                optimized_orfs[id] = codon_optimize(id, sequence, codon_table, True)
-            else:
-                optimized_orfs[id] = codon_optimize(id, sequence, codon_table, False)
-
-        if args.output:
-            writer(optimized_orfs, path_save)
-            print(msg_saved)
-        else:
-            print(writer(optimized_orfs, False))
+        print(writer(solution))
 
 
 if __name__ == "__main__":
