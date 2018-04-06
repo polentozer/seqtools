@@ -34,12 +34,12 @@ def make_dna_triplets(string):
 def codon_optimize(name, orf, codon_table, forced):
     """
     Checks if a given sequence starts with the start codon ('ATG') and promts you if it doesn't.
-    Optimizes codons to most frequently used from codon table.
+    Optimizes codons to most frequently used from the codon table.
     """
 
     if orf[:3] != "ATG":
         if not forced:
-            cont_prompt = input("Sequence with id `{0}` is not ORF, do you want to continue anyway? (Y/n): ".format(name))
+            cont_prompt = input("Sequence with id `{0}` is not an ORF, optimize anyway? (Y/n): ".format(name))
         
             if cont_prompt.upper() == "Y" or cont_prompt.upper() == "YES" or cont_prompt == "":
                 forced = True
@@ -65,6 +65,8 @@ def codon_optimize(name, orf, codon_table, forced):
 def writer(dictionary, path=None):
     """
     Simple function for writing `.fasta` files.
+    Translates dictionary into a fasta file and writes it to a file. If no path is given,
+    it returns only translated string.
     """
     string = ""
 
@@ -84,7 +86,7 @@ def writer(dictionary, path=None):
 
 def open_fasta(file_input_path):
     """
-    Function for opening `.fasta` files that can contain more than just one sequence.
+    Function for opening `.fasta` files. Files can contain multiple sequences.
     Returns dictionary of sequences ==> {id: sequence}
     """
     sequence_dictionary = {}
@@ -104,6 +106,9 @@ def open_fasta(file_input_path):
 
 
 def protein_to_dna(sequences, codon_table):
+    """
+    Translates protein to dna with a call to reverse_translate() function.
+    """
     reverse_translations = {}
 
     for id, sequence in sequences.items():
@@ -116,6 +121,9 @@ def protein_to_dna(sequences, codon_table):
 
 
 def optimize_dna(sequences, codon_table, forced):
+    """
+    Optimizes DNA triplets to use most common codons from the codon_table.
+    """
     optimized_orfs = {}
 
     for id, sequence in sequences.items():
