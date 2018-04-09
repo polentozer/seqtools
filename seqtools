@@ -149,9 +149,8 @@ def main():
     args = parser.parse_args()
 
     # Variables
-    current_dir = os.path.dirname(os.path.realpath(__file__))
-    path_fasta = "{0}/{1}".format(current_dir, args.input)
-    path_table = "{0}/{1}".format(current_dir, args.table)
+    path_fasta = os.path.join(os.path.join(os.getcwd(), args.input))
+    path_table = os.path.join(os.path.join(os.getcwd(), args.table))
     codon_table = pandas.read_csv(path_table, header=None)
     sequences = open_fasta(path_fasta)
 
@@ -164,7 +163,7 @@ def main():
 
     # Saving/Printing solution(s)
     if args.output:
-        path_save = "{0}/{1}".format(current_dir, args.output)
+        path_save = os.path.join(os.path.join(os.getcwd(), args.output))
         msg_saved = "Output saved to `{0}`".format(args.output)
         writer(solution, path_save)
         print(msg_saved)
