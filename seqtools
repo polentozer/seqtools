@@ -31,35 +31,35 @@ def make_dna_triplets(string):
     return [string[start:start+3] for start in range(0, len(string), 3)]
 
 
-def codon_optimize(name, orf, codon_table, forced):
+def codon_optimize(sequence_id, cds, codon_table, force):
     """
     Checks if a given sequence starts with the start codon ('ATG') and promts you if it doesn't.
     Optimizes codons to most frequently used from the codon table.
     """
+    run = True
 
-    if orf[:3] != "ATG":
-        if not forced:
-            cont_prompt = input("Sequence with id `{0}` is not an ORF, optimize anyway? (Y/n): ".format(name))
-        
-            if cont_prompt.upper() == "Y" or cont_prompt.upper() == "YES" or cont_prompt == "":
-                forced = True
-            else:
-                forced = False
-                return False, forced
+    if cds[:3] != "ATG":
+        if not force:
+            run = prompt_force(sequence_id, cds[:3])
+            force = True
     else:
-        forced = False
+        force = False
 
-    optimized_orf = ""
+    if run:
+        optimized_cds = ""
 
-    for triplet in make_dna_triplets(orf):
-        
-        if len(triplet) == 3:
-            optimized_orf += reverse_translate(codon_table.loc[
-                codon_table[1] == triplet][0].iloc[0][0], codon_table)
-        else:
-            optimized_orf += triplet
+        for triplet in make_dna_triplets(cds):
+            
+            if len(triplet) == 3:
+                optimized_cds += reverse_translate(codon_table.loc[
+                    codon_table[1] == triplet][0].iloc[0][0], codon_table)
+            else:
+                optimized_cds += triplet
 
-    return optimized_orf, forced
+        return optimized_cds, force
+    
+    else:
+        return False, force
 
 
 def writer(dictionary, path=None):
@@ -111,25 +111,67 @@ def protein_to_dna(sequences, codon_table):
     """
     reverse_translations = {}
 
-    for id, sequence in sequences.items():
-        reverse_translations[id] = ["", None]
+    for sequence_id, sequence in sequences.items():
+        reverse_translations[sequence_id] = ["", None]
 
         for amino in sequence:
-            reverse_translations[id][0] += reverse_translate(amino, codon_table)
+            reverse_translations[sequence_id][0] += reverse_translate(amino, codon_table)
     
     return reverse_translations
 
 
-def optimize_dna(sequences, codon_table, forced):
+def dna_operation(sequences, codon_table, force, optimize=None):
     """
     Optimizes DNA triplets to use most common codons from the codon_table.
     """
-    optimized_orfs = {}
+    solutions = {}
 
-    for id, sequence in sequences.items():
-        optimized_orfs[id] = codon_optimize(id, sequence, codon_table, forced)
+    if optimize:
+        for sequence_id, sequence in sequences.items():
+            solutions[sequence_id] = codon_optimize(sequence_id, sequence, codon_table, force)
+    else:
+        for sequence_id, sequence in sequences.items():
+            solutions[sequence_id] = translate_dna(sequence_id, sequence, codon_table, force)
     
-    return optimized_orfs
+    return solutions
+
+
+def prompt_force(sequence_id, first_triplet):
+    cont_prompt = input("Sequence with ID `{0}` is not a CDS, optimize anyway? (Y/n): ".format(sequence_id))
+    
+    if cont_prompt.upper() == "Y" or cont_prompt.upper() == "YES" or cont_prompt == "":
+        return True
+    else:
+        return False
+
+
+def translate_dna(sequence_id, cds, codon_table, force):
+    """
+    Translates coding DNA sequence to protein sequence.
+    """
+    run = True
+
+    if cds[:3] != "ATG":
+        if not force:
+            run = prompt_force(sequence_id, cds[:3])
+            force = True
+    else:
+        force = False
+
+    if run:
+        translation = ""
+
+        for triplet in make_dna_triplets(cds):
+            
+            if len(triplet) == 3:
+                translation += codon_table.loc[codon_table[1] == triplet][0].iloc[0][0]
+            else:
+                translation += "?"
+
+        return translation, force
+
+    else:
+        return False, force
 
 
 def main():
@@ -141,11 +183,12 @@ def main():
 
     # Arguments
     parser = argparse.ArgumentParser(description=description)
-    parser.add_argument("-i","--input", help="Path to input 'fasta' file", required=True)
-    parser.add_argument("-t","--table",help="Path to codon usage table in csv format: 'aminoacid,triplet,value')", required=True)
-    parser.add_argument("-p","--protein", action="store_true", help="Use this flag when working with protein sequences", required=False)
-    parser.add_argument("-o", "--output", help="Name for the output fasta file", required=False)
-    parser.add_argument("-f","--force", action="store_true", help="Use this flag to omit any prompts", required=False)
+    parser.add_argument("-i", "--input", help="Path to input 'fasta' file", required=True)
+    parser.add_argument("-t", "--table",help="Path to codon usage table in csv format: 'aminoacid,triplet,value')", required=True)
+    parser.add_argument("-p", "--protein", action="store_true", help="Use this flag when working with protein sequences", required=False)
+    parser.add_argument("-o",  "--output", help="Name for the output fasta file", required=False)
+    parser.add_argument("-f", "--force", action="store_true", help="Use this flag to omit any prompts", required=False)
+    parser.add_argument("-O", "--optimize", action="store_true", help="Use to optimize DNA sequence instead translating it.", required=False)
     args = parser.parse_args()
 
     # Variables
@@ -159,7 +202,7 @@ def main():
         solution = protein_to_dna(sequences, codon_table)
 
     elif not args.protein:
-        solution = optimize_dna(sequences, codon_table, args.force)
+        solution = dna_operation(sequences, codon_table, args.force, args.optimize)
 
     # Saving/Printing solution(s)
     if args.output:
@@ -168,8 +211,22 @@ def main():
         writer(solution, path_save)
         print(msg_saved)
     else:
+        print()
         print(writer(solution))
 
 
 if __name__ == "__main__":
     main()
+
+
+# a = open_fasta("test_data/multi_dna.fasta")
+# t = pandas.read_csv("test_data/table.csv", header=None)
+# f = False
+# z = True
+# # z = False
+
+
+# x = dna_operation(a, t, f, z)
+# y = writer(x)
+
+# print(y)
