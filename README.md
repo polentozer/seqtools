@@ -23,7 +23,8 @@ python setup.py install
 
 ## Usage
 ```bash
-# translate DNA sequence to protein sequence using genetic code table provided in the codon usage table and print the output
+# translate DNA sequence to protein sequence using genetic code table provided
+# in the codon usage table and print the output
 seqtools -t test_data/table.csv -i test_data/dna.fasta
 
 # reverse-translate and codon-optimize a protein sequence and print the output
