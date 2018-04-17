@@ -1,5 +1,6 @@
 -[x] dna --> prot
 -[x] proper file input behaviour
+-[ ] default genetic code tables (at least standard one)
 -[ ] detecting protein/dna sequences if no -p flag is given
 -[ ] optimizing GC content
 -[ ] analyzing dna sequence optimization (from 0-100%)
