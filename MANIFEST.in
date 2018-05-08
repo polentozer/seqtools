@@ -1,0 +1,4 @@
+# include meta data
+include README.md
+include LICENSE
+include seqtools/data/sample_table.csv

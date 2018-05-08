@@ -1,7 +1,49 @@
 -[x] dna --> prot
 -[x] proper file input behaviour
--[ ] default genetic code tables (at least standard one)
+
+-[x] change to package
+
+-[ ] change dictionaries to lists [id, seq]
+    -[ ] io.fasta.open_fasta
+    -[ ] io.output.writer
+    -[ ] seqtools.protein_to_dna
+    -[ ] seqtools.dna_operations
+
+-[o] default genetic code tables (at least standard one)
+    -[x] the "sample-one"
+    -[ ] actual genetic code tables
+
+-[ ] extend reverse translation to incorporate extended DNA symbols
 -[ ] detecting protein/dna sequences if no -p flag is given
 -[ ] optimizing GC content
 -[ ] analyzing dna sequence optimization (from 0-100%)
 -[ ] different optimization stages (from 0-100%)
+
+-[ ] genbank (gb) input files
+
+-[ ] incorporate unit conversions
+
+
+
+-------------------------------------------
+Calculation formulas.
+
+m [g] - weight of nucleic acid (for example, quantity in microfuge tube) [gram];
+Mw(olig) [kDa] - molecular weight of oligonucleotide [kilo Dalton].
+<Mw> [Da] - mean molecular weight of one/pair of nucleotides [Dalton].
+- base= 324.5 Da
+- base pair = 649 Da
+- ribo base = 340.5 Da
+Q [mol] - quantity of nucleic acid (in the same tube) [mole];
+N [pieces] - quantity of nucleic acid [pieces];
+c [M] - molar concentration of nucleic acid [Mole]=[mole/litre];
+V [L] - dilution volume [litre];
+L [kb] - length of nucleic acid [in thousands of bases];
+NA - Avogadro constant = 6.022045e23[1/mole];
+the relation between these values will be:
+
+m[g] = Q[mol] x Mw(olig)[kDa] x 103
+m[g] = Q[mol] x <Mw>[Da] x L[kb] x 103
+N[pieces] = Q[mol] x NA
+c[M] x V[L] = Q[mol]
+-------------------------------------------
