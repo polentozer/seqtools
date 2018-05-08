@@ -1,7 +1,7 @@
 -[x] dna --> prot
 -[x] proper file input behaviour
 
--[ ] change to package
+-[x] change to package
 
 -[ ] change dictionaries to lists [id, seq]
     -[ ] io.fasta.open_fasta

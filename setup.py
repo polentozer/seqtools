@@ -1,21 +1,39 @@
 #!/usr/bin/env python 3
-import os
-from setuptools import setup
+from os import path
+from setuptools import setup, find_packages
 
-# Get package metadata from 'iCount/__about__.py' file
+base_dir = path.dirname(path.realpath(__file__))
+
+with open(path.join(base_dir, 'README.md'), encoding='utf-8') as f:
+    LONG_DESC = f.read()
+
+# Get package metadata from 'seqtools/__about__.py' file
+base_dir = path.dirname(path.realpath(__file__))
 about = {}
-with open(os.path.join(os.getcwd, 'seqtools', '__about__.py'), encoding='utf-8') as f:
+with open(path.join(base_dir, 'seqtools', '__about__.py'), encoding='utf-8') as f:
     exec(f.read(), about)
 
 setup(
     name=about['__title__'],
-    version=about['__summary__'],
+
+    version=about['__version__'],
+    
     author=about['__author__'],
+    
     author_email=about['__email__'],
+    
     description=about['__summary__'],
+
+    long_description=LONG_DESC,
+
+    url=about['__url__'],
+    
     license=about['__license__'],
+
+    packages=find_packages(exclude=['test*']),
+    
     classifiers=[
-        'Development Status :: Alpha',
+        'Development Status :: 3 - Alpha',
         'Topic :: Scientific/Engineering :: Bio-Informatics',
         'Intended Audience :: Developers',
         'Intended Audience :: Science/Research',
@@ -24,47 +42,22 @@ setup(
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.6',
     ],
+    
     keywords='seqtools',
-    #
-    # TODO: check this section below, what is needed
-    # 
-    install_requires=['pandas'],
+
+    package_data={
+        'seqtools': [
+            'data/*.csv',
+        ]
+    },
+
+    install_requires=[
+        'pandas',
+        ],
+    
+    entry_points={
+        'console_scripts': [
+            'seqtools = seqtools.cli:main',
+        ],
+    },
 )
-
-
-    # # exclude tests from built/installed package
-    # packages=find_packages(exclude=['*.tests', '*.tests.*', 'docs/presentations',
-    #                                 'docs/presentations/*']),
-    # package_data={
-    #     'iCount': [
-    #         'examples/*.sh',
-    #     ]
-    # },
-
-    # extras_require={
-    #     'docs': [
-    #         'docutils',
-    #         'releases',
-    #         'sphinx_rtd_theme',
-    #     ],
-    #     'package': [
-    #         'pypandoc'
-    #         'twine',
-    #         'wheel',
-    #     ],
-    #     'test': [
-    #         'check-manifest',
-    #         'pylint>=1.6.4',
-    #         'pycodestyle>=2.1.0',
-    #         'pydocstyle>=1.0.0',
-    #         'pytest-cov',
-    #         'readme_renderer',
-    #         'coverage>=4.2',
-    #     ],
-    # },
-
-    # entry_points={
-    #     'console_scripts': [
-    #         'iCount = iCount.cli:main',
-    #     ],
-    # },
