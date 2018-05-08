@@ -9,7 +9,10 @@
     -[ ] seqtools.protein_to_dna
     -[ ] seqtools.dna_operations
 
--[ ] default genetic code tables (at least standard one)
+-[o] default genetic code tables (at least standard one)
+    -[x] the "sample-one"
+    -[ ] actual genetic code tables
+
 -[ ] extend reverse translation to incorporate extended DNA symbols
 -[ ] detecting protein/dna sequences if no -p flag is given
 -[ ] optimizing GC content
