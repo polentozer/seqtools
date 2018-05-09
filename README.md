@@ -1,9 +1,6 @@
 # SEQTOOLS
 ## Description
-Command line tool for manipulating `.fasta` files.
-
-## Installation
-Tool can be installed by building it first with `python setup.py sdist` and then installing it with `pip install .`.
+Command line tool for manipulating DNA and protein sequence data in `.fasta` files.
 
 ### Requirements
 - pandas
@@ -16,9 +13,10 @@ aminoacid,dna_triplet,value
 ...
 ```
 
+## Installation
 To install type in terminal:
 ```bash
-python setup.py install
+git clone git@github.com:polentozer/seqtools.git && cd seqtools && pip install .
 ```
 
 ## Usage

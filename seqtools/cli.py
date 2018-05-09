@@ -7,11 +7,9 @@ def main():
     """
     Main function with argument parsing.
     """
-    description = ("Welcome to python script for converting protein sequence to DNA sequence with\
-                    custom table for codon usage.")
 
     # Arguments
-    parser = argparse.ArgumentParser(description=description)
+    parser = argparse.ArgumentParser(description=seqtools.__summary__)
     parser.add_argument("-v", "--version", action="version", version=seqtools.__version__)
     parser.add_argument("-i", "--input", help="Path to input 'fasta' file", required=True)
     parser.add_argument("-t", "--table",help="Path to codon usage table in csv format: 'aminoacid,triplet,value')", required=False)
