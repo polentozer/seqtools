@@ -17,6 +17,7 @@ def main():
     parser.add_argument("-o",  "--output", help="Name for the output fasta file", required=False)
     parser.add_argument("-f", "--force", action="store_true", help="Use this flag to omit any prompts", required=False)
     parser.add_argument("-O", "--optimize", action="store_true", help="Use to optimize DNA sequence instead translating it.", required=False)
+    parser.add_argument("-a", "--analyze", action="store_true", help="Use this flag to perform analysis on your sequences", required=False)
     args = parser.parse_args()
 
     # Input files
@@ -28,18 +29,18 @@ def main():
     sequences = seqtools.io.fasta.open_fasta(args.input)
 
     # Protein translation
-    if args.protein:
+    if args.protein and not args.analyze:
         solution = seqtools.seqtools.protein_to_dna(sequences, codon_table)
-    elif not args.protein:
-        solution = seqtools.seqtools.dna_operation(sequences, codon_table, args.force, args.optimize)
+    else:
+        seqtools.seqtools.dna_operation(sequences, codon_table, args.force, args.optimize, args.analyze)
 
     # Saving/Printing solution(s)
-    if args.output:
-        path_save = path.join(path.join(getcwd(), args.output))
-        msg_saved = "Output saved to `{0}`".format(path_save)
-        seqtools.io.output.writer(solution, path_save)
-        print(msg_saved)
-    else:
-        print()
-        print(seqtools.io.output.writer(solution))
-
+    if not args.analyze:
+        if args.output:
+            path_save = path.join(path.join(getcwd(), args.output))
+            msg_saved = "Output saved to `{0}`".format(path_save)
+            seqtools.io.output.writer(solution, path_save)
+            print(msg_saved)
+        else:
+            print()
+            print(seqtools.io.output.writer(solution))

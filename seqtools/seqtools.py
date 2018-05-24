@@ -1,6 +1,3 @@
-import pandas
-
-
 def make_triplets(string):
     """
     Makes chunks of 3 characters from a long string.
@@ -8,24 +5,20 @@ def make_triplets(string):
     return [string[start:start+3] for start in range(0, len(string), 3)]
 
 
-def prompt_force(string):
-    cont_prompt = input("Sequence with ID `{0}` is not a CDS, optimize anyway? (Y/n): ".format(string))
-    
-    if cont_prompt.upper() == "Y" or cont_prompt.upper() == "YES" or cont_prompt == "":
-        return True
-    else:
-        return False
-
-
-def dna_operation(sequences, codon_table, force, optimize=None):
+def dna_operation(sequences, codon_table, force, optimize=None, analyze=None):
     """
     Optimizes DNA triplets to use most common codons from the codon_table.
     """
     solutions = {}
 
-    if optimize:
+    if analyze:
+        for sequence_id, sequence in sequences.items():
+            optimization_value(sequence_id, sequence, codon_table, force)
+
+    elif optimize:
         for sequence_id, sequence in sequences.items():
             solutions[sequence_id] = codon_optimize(sequence_id, sequence, codon_table, force)
+   
     else:
         for sequence_id, sequence in sequences.items():
             solutions[sequence_id] = translate_dna(sequence_id, sequence, codon_table, force)
@@ -64,17 +57,9 @@ def reverse_translate(amino, codon_table):
 
 def codon_optimize(sequence_id, cds, codon_table, force):
     """
-    Checks if a given sequence starts with the start codon ('ATG') and promts you if it doesn't.
     Optimizes codons to most frequently used from the codon table.
     """
-    run = True
-
-    if cds[:3] != "ATG":
-        if not force:
-            run = prompt_force(sequence_id)
-            force = True
-    else:
-        force = False
+    run, force = check_start(cds[:3], sequence_id, force)
 
     if run:
         optimized_cds = ""
@@ -90,21 +75,14 @@ def codon_optimize(sequence_id, cds, codon_table, force):
         return optimized_cds, force
     
     else:
-        return False, force
+        return None, force
 
 
 def translate_dna(sequence_id, cds, codon_table, force):
     """
     Translates coding DNA sequence to protein sequence.
     """
-    run = True
-
-    if cds[:3] != "ATG":
-        if not force:
-            run = prompt_force(sequence_id)
-            force = True
-    else:
-        force = False
+    run, force = check_start(cds[:3], sequence_id, force)
 
     if run:
         translation = ""
@@ -119,4 +97,64 @@ def translate_dna(sequence_id, cds, codon_table, force):
         return translation, force
 
     else:
-        return False, force
+        return None, force
+
+
+def check_start(first_codon, sequence_id, force):
+    """
+    Checks if first codon equals to 'ATG' and prompts to force operation, if it doesn't.
+    """
+    if first_codon != "ATG":
+        if not force:
+            cont_prompt = input(
+                "Sequence with ID `{0}` is not a CDS, optimize anyway? (Y/n): ".format(sequence_id))
+            if cont_prompt.upper() == "Y" or cont_prompt.upper() == "YES" or cont_prompt == "":
+                run, force = True, True
+            else:
+                run, force = False, False
+        else:
+            run, force = True, True
+    else:
+        run, force = True, False
+    
+    return run, force
+
+
+def optimization_value(sequence_id, cds, codon_table, force):
+    """
+    Calculates the codon optimization value of a given sequence.
+    MAX VALUE: 1
+    MIN VALUE: 0
+    """
+    run, force = check_start(cds[:3], sequence_id, force)
+
+    if run:
+        protein = translate_dna(sequence_id, cds, codon_table, force)[0]
+
+        cds_triplets = make_triplets(cds)
+
+        optimized_cds_triplets = make_triplets(codon_optimize(
+            sequence_id, cds, codon_table, force)[0]
+            )
+
+        values = []
+
+        for amino, original, optimized in zip(protein, cds_triplets, optimized_cds_triplets):
+            if original == optimized:
+                x=1
+            else:
+                x=0
+            values.append(x)
+            print(amino, original, optimized, x)
+
+        if len(values) == sum(values):
+            print(f"{sequence_id} is fully optimized!")
+
+        else:
+            opt_val = sum(values) / len(values)
+            print(f"Optimization percentage for {sequence_id} is {opt_val*100:.2f} %")
+
+        print()
+
+    else:
+        return None, force
