@@ -18,8 +18,7 @@ def seek_relevant_occurrence(dna, min_length, max_length, threshold):
     results = {}
     
     for i in range(min_length, max_length):
-        temp = occurrence(dna, i)
-        sorted_temp = sorted(temp.items(), key=operator.itemgetter(1))
+        sorted_temp = sorted(occurrence(dna, i).items(), key=operator.itemgetter(1))
         
         i = 1
         while sorted_temp[-i][1] >= threshold:

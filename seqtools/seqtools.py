@@ -129,17 +129,12 @@ def optimization_value(sequence_id, cds, codon_table, force):
     run, force = check_start(cds[:3], sequence_id, force)
 
     if run:
-        protein = translate_dna(sequence_id, cds, codon_table, force)[0]
-
-        cds_triplets = make_triplets(cds)
-
-        optimized_cds_triplets = make_triplets(codon_optimize(
-            sequence_id, cds, codon_table, force)[0]
-            )
-
         values = []
 
-        for amino, original, optimized in zip(protein, cds_triplets, optimized_cds_triplets):
+        for amino, original, optimized in zip(translate_dna(sequence_id, cds, codon_table,
+                                              force)[0], make_triplets(cds), make_triplets(
+                                              codon_optimize(sequence_id, cds, codon_table,
+                                              force)[0])):
             if original == optimized:
                 x=1
             else:

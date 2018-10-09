@@ -6,7 +6,7 @@ __title__ = 'seqtools'
 __summary__ = 'Command line tools for manipulating `.fasta` files'
 __url__ = 'https://github.com/polentozer/seqtools'
 
-__version__ = '0.1.dev0'
+__version__ = '0.1.dev1'
 
 __author__ = 'Tadej Markus'
 __email__ = 'markus.tadej@gmail.com'

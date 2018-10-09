@@ -16,12 +16,13 @@
 -[ ] extend reverse translation to incorporate extended DNA symbols
 -[ ] detecting protein/dna sequences if no -p flag is given
 -[ ] optimizing GC content
--[ ] analyzing dna sequence optimization (from 0-100%)
+-[x] analyzing dna sequence optimization (from 0-100%)
 -[ ] different optimization stages (from 0-100%)
 
 -[ ] genbank (gb) input files
 
 -[ ] incorporate unit conversions
+-[ ] kmer analysis
 
 
 
