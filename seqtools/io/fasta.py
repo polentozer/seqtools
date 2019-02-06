@@ -1,4 +1,4 @@
-def open_fasta(file_input_path):
+def open_fasta(file_input_paths):
     """
     Function for opening `.fasta` files. Files can contain multiple sequences.
     Returns dictionary of sequences ==> {id: sequence}
@@ -22,15 +22,16 @@ def open_fasta(file_input_path):
     """
     sequence_dictionary = {}
 
-    with open(file_input_path, 'r') as input_file:
-        data = input_file.readlines()
-    
-    for line in data:
-        temp = line.strip()
-        if line[0] == ">":
-            sequence_id = temp[:20]
-            sequence_dictionary[sequence_id] = ""
-        else:
-            sequence_dictionary[sequence_id] += temp.upper()
+    for input_path in file_input_paths:
+        with open(input_path, 'r') as input_file:
+            data = input_file.readlines()
+        
+        for line in data:
+            temp = line.strip()
+            if line[0] == ">":
+                sequence_id = temp[:20]
+                sequence_dictionary[sequence_id] = ""
+            else:
+                sequence_dictionary[sequence_id] += temp.upper()
 
     return sequence_dictionary

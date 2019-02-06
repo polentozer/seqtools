@@ -153,3 +153,18 @@ def optimization_value(sequence_id, cds, codon_table, force):
 
     else:
         return None, force
+
+
+def remove_type2_sites(sequence_id, cds, codon_table):
+    """
+    Finds and removes type2 restriction sites
+
+    BsaI:
+    GGTCTCN^NNNN N
+    CCAGAGN NNNN^N
+
+    BsmBI:
+    CGTCTCN^NNNN N
+    GCAGAGN NNNN^N
+    """
+    pass
