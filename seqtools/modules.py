@@ -8,7 +8,7 @@ class Sequence:
 
     def __init__(self, sequence_id, sequence):
         self.sequence_id = sequence_id
-        self.sequence = sequence
+        self.sequence = sequence.upper()
 
     def __repr__(self):
         return f'{self.sequence_id}, {self.sequence}'
@@ -28,10 +28,24 @@ class Protein(Sequence):
     '''
     PROTEIN sequence object.
     '''
-    allowed_characters = '?galmfwkqespvicyhrndt'
+    allowed_characters = '*?galmfwkqespvicyhrndt'
 
     def __init__(self, sequence_id, sequence):
         super().__init__(sequence_id, sequence)
+
+    def reverse_translate(self, codon_table):
+        reverse_translation = ''
+        for amino in self.sequence:
+            temp_values = []
+            temp_triplets = []
+
+            for _, row in codon_table.loc[codon_table[0] == amino].iterrows():
+                temp_triplets.append(row[1])
+                temp_values.append(row[2])
+
+            reverse_translation += temp_triplets[temp_values.index(max(temp_values))]
+
+        return Nucleotide(f'{self.sequence_id}|NUC', reverse_translation)
 
 
 class Nucleotide(Sequence):

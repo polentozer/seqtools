@@ -3,93 +3,91 @@ from seqtools.modules import Nucleotide
 from random import choice
 
 
-def generate_dna(length, r=4, s=6, t=False, g=False):
-    run = True
-    while run:
-        fin = generator(length, chars=dna)
+def generate_dna(length, single_repeats=4, strand_repeats=6, type2=False, gc=False):
+    dna = ['A', 'C', 'G', 'T']
+    restriction_enzymes = [
+        "GGTCTC",  # BsaI
+        "GAGACC",  # BsaI reverse
+        "CGTCTC",  # BsmBI
+        "GAGACG",  # BsmBI reverse
+        "TCTAGA",  # XbaI
+        "GAATTC",  # EcoRI
+    ]
 
-        a = check_char_repeats(s=fin, upper_bound=r, chars=dna)
-        d = check_gc_streach(s=fin, upper_bound=s)
+    while True:
+        candidate = generator(length, chars=dna)
 
-        if not t:
-            c = check_type2(s=fin, restriction_set=restriction_enzymes)
+        a = check_char_repeats(candidate, upper_bound=single_repeats, chars=dna)
+        b = check_gc_streach(candidate, upper_bound=strand_repeats)
+
+        if not type2:
+            c = check_type2(candidate, restriction_set=restriction_enzymes)
         else:
             c = False
 
-        if not g:
-            b = gc_cont(s=fin, upper_bound=.6, lower_bound=.4)
+        if not gc:
+            d = gc_cont(candidate, upper_bound=.6, lower_bound=.4)
         else:
-            g = False
+            d = False
 
-        if a or b or c or d:
-            run = True
-        else:
-            run = False
-
-    else:
-        print(fin)
-        print("Sequence has been copied to clipboard!")
-        pyperclip.copy(fin)
-
+        if not (a or b or c or d):
+            fin = Nucleotide('Generated DNA', candidate)
+            print(fin)
+            print("\nSequence has been copied to clipboard!")
+            pyperclip.copy(fin.sequence)
 
 ###
-# UTIL
+# UTILS
 #
 
-dna = ['A', 'C', 'G', 'T']
-restriction_enzymes = [
-    "GGTCTC",  # BsaI
-    "GAGACC",  # BsaI reverse
-    "CGTCTC",  # BsmBI
-    "GAGACG",  # BsmBI reverse
-    "TCTAGA",  # XbaI
-    "GAATTC",  # EcoRI
-]
 
-
-def generator(l, chars):
+def generator(length, chars):
     result = ''
-    for i in range(l):
+    for i in range(length):
         result += choice(chars)
-
     return result
 
 
-def check_char_repeats(s, upper_bound, chars):
-    for c in chars:
-        if c * upper_bound in s:
+def check_type2(sequence, restriction_set):
+    for restriction_site in restriction_set:
+        if restriction_site in sequence:
             return True
-        else:
-            return False
+    return False
 
 
-def gc_cont(s, upper_bound, lower_bound):
+def check_char_repeats(sequence, upper_bound, chars):
+    for char in chars:
+        if char * upper_bound in sequence:
+            return True
+    return False
+
+
+def gc_cont(sequence, upper_bound, lower_bound):
     gc = 0
-    for c in s:
-        if c == "G" or c == "C":
+    for char in sequence:
+        if char == "G" or char == "C":
             gc += 1
 
-    r = gc / len(s)
+    ratio = gc / len(sequence)
 
-    if upper_bound > r > lower_bound:
-        return False
-    else:
+    if not upper_bound > ratio > lower_bound:
         return True
+    return False
 
 
-def check_gc_streach(s, upper_bound):
+def check_gc_streach(sequence, upper_bound):
     longest = 0
     gc = 0
     at = 0
-    for c in s:
-        if c == "G" or c == "C":
+    for char in sequence:
+        if char == "G" or char == "C":
             gc += 1
         else:
             if longest < gc:
                 longest = gc
             gc = 0
 
-        if c == "A" or c == "T":
+        if char == "A" or char == "T":
             at += 1
         else:
             if longest < at:
@@ -98,13 +96,4 @@ def check_gc_streach(s, upper_bound):
 
     if longest >= upper_bound:
         return True
-    else:
-        return False
-
-
-def check_type2(s, restriction_set):
-    for r in restriction_set:
-        if r in s:
-            return True
-        else:
-            return False
+    return False
