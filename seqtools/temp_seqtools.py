@@ -2,7 +2,7 @@ def make_triplets(string):
     """
     Makes chunks of 3 characters from a long string.
     """
-    return [string[start:start+3] for start in range(0, len(string), 3)]
+    return [string[start:start + 3] for start in range(0, len(string), 3)]
 
 
 def dna_operation(sequences, codon_table, force, optimize=None, analyze=None):
@@ -18,11 +18,11 @@ def dna_operation(sequences, codon_table, force, optimize=None, analyze=None):
     elif optimize:
         for sequence_id, sequence in sequences.items():
             solutions[sequence_id] = codon_optimize(sequence_id, sequence, codon_table, force)
-   
+
     else:
         for sequence_id, sequence in sequences.items():
             solutions[sequence_id] = translate_dna(sequence_id, sequence, codon_table, force)
-    
+
     return solutions
 
 
@@ -37,7 +37,7 @@ def protein_to_dna(sequences, codon_table):
 
         for amino in sequence:
             reverse_translations[sequence_id][0] += reverse_translate(amino, codon_table)
-    
+
     return reverse_translations
 
 
@@ -51,7 +51,7 @@ def reverse_translate(amino, codon_table):
     for i, row in codon_table.loc[codon_table[0] == amino].iterrows():
         temp_triplets.append((row[1]).strip().upper())
         temp_values.append(row[2])
-    
+
     return temp_triplets[temp_values.index(max(temp_values))]
 
 
@@ -65,7 +65,7 @@ def codon_optimize(sequence_id, cds, codon_table, force):
         optimized_cds = ""
 
         for triplet in make_triplets(cds):
-            
+
             if len(triplet) == 3:
                 optimized_cds += reverse_translate(codon_table.loc[
                     codon_table[1] == triplet][0].iloc[0][0], codon_table)
@@ -73,7 +73,7 @@ def codon_optimize(sequence_id, cds, codon_table, force):
                 optimized_cds += triplet
 
         return optimized_cds, force
-    
+
     else:
         return None, force
 
@@ -88,7 +88,7 @@ def translate_dna(sequence_id, cds, codon_table, force):
         translation = ""
 
         for triplet in make_triplets(cds):
-            
+
             if len(triplet) == 3:
                 translation += codon_table.loc[codon_table[1] == triplet][0].iloc[0][0]
             else:
@@ -116,7 +116,7 @@ def check_start(first_codon, sequence_id, force):
             run, force = True, True
     else:
         run, force = True, False
-    
+
     return run, force
 
 
@@ -131,14 +131,14 @@ def optimization_value(sequence_id, cds, codon_table, force):
     if run:
         values = []
 
-        for amino, original, optimized in zip(translate_dna(sequence_id, cds, codon_table,
-                                              force)[0], make_triplets(cds), make_triplets(
-                                              codon_optimize(sequence_id, cds, codon_table,
-                                              force)[0])):
+        for amino, original, optimized in zip(
+                translate_dna(sequence_id, cds, codon_table, force)[0], make_triplets(cds),
+                make_triplets(codon_optimize(sequence_id, cds, codon_table, force)[0])):
+
             if original == optimized:
-                x=1
+                x = 1
             else:
-                x=0
+                x = 0
             values.append(x)
             print(amino, original, optimized, x)
 
