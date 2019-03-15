@@ -26,5 +26,10 @@ def open_fasta(file_input_paths, protein=False):
                 sequence = ''
             else:
                 sequence += temp.upper()
+        else:
+            if protein:
+                sequences.append(Protein(seq_id, sequence))
+            else:
+                sequences.append(Nucleotide(seq_id, sequence))
 
     return sequences

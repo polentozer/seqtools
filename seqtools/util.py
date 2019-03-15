@@ -15,7 +15,7 @@ def codon_table_parser(path_to_table):
     if not path_to_table:
         return None
 
-    filenmae, extension = os.path.splitext(path_to_table)
+    _, extension = os.path.splitext(path_to_table)
 
     if extension == '.csv':
         return pandas.read_csv(path_to_table, header=None)

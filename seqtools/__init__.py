@@ -19,7 +19,7 @@ def main():
         if args.table:
             codon_table = codon_table_parser(args.table)
         else:
-            sys.stdout.write("\n### Using sample codon usage table!!! ###")
+            sys.stdout.write("\n### Using sample codon usage table!!! ###\n")
             codon_table = pandas.read_csv(os.path.join(os.path.dirname(os.path.abspath(__file__)), "data/sample_table.csv"), header=None)
 
         # protein translation
@@ -34,7 +34,6 @@ def main():
                 raise NotImplemented()
             else:
                 solution = [dna.translate(codon_table) for dna in sequences]
-            # seqtools.dna_operation(sequences, codon_table, args.force, args.optimize, args.analyze)
 
         # saving/printing solutions
         if args.output:

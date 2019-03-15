@@ -1,3 +1,6 @@
+import sys
+
+
 def dict_writer(dictionary, path=None):
     """
     Simple function for writing `.fasta` files.
@@ -29,7 +32,9 @@ def writer(solution_list, path=None):
     if path:
         with open(path, 'w') as file_out:
             for sequence in solution_list:
-                file_out.write(f'{sequence}\n\n')
+                if sequence:
+                    file_out.write(f'\n{sequence}\n')
     else:
         for sequence in solution_list:
-            print(sequence)
+            if sequence:
+                sys.stdout.write(f'\n{sequence}\n')

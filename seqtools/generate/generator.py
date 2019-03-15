@@ -38,6 +38,7 @@ def generate_dna(length, single_repeats=4, strand_repeats=6, type2=False, gc=Fal
             print(fin)
             print("\nSequence has been copied to clipboard!")
             pyperclip.copy(fin.sequence)
+            return
 
 ###
 # UTILS
