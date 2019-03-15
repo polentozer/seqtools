@@ -1,9 +1,12 @@
 import pyperclip
-from seqtools.modules import Nucleotide
 from random import choice
+from seqtools.modules import Nucleotide
 
 
 def generate_dna(length, single_repeats=4, strand_repeats=6, type2=False, gc=False):
+    '''
+    DNA generator
+    '''
     dna = ['A', 'C', 'G', 'T']
     restriction_enzymes = [
         "GGTCTC",  # BsaI

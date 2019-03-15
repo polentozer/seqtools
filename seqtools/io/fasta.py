@@ -4,7 +4,7 @@ from seqtools.modules import Nucleotide, Protein
 def open_fasta(file_input_paths, protein=False):
     '''
     Function for opening `.fasta` files. Files can contain multiple sequences.
-    Returns list of sequences.
+    Returns list of sequence objects.
     '''
     sequences = []
     seq_id = ''

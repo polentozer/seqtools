@@ -1,20 +1,13 @@
 ###
 ##
 #
-
+from seqtools import __about__
 import argparse
-import pandas
-import seqtools
-from os import path, getcwd
 
 
-def main():
-    """
-    Main function with argument parsing.
-    """
-
-    # Arguments
-    parser = argparse.ArgumentParser(description=seqtools.__summary__)
+def cli_argparser():
+    # arguments
+    parser = argparse.ArgumentParser(description=__about__.__summary__)
     subparser = parser.add_subparsers(dest='commands')
 
     # generate dna
@@ -40,38 +33,7 @@ def main():
     translate_parser.add_argument("-p", "--protein", action="store_true", help="Use this flag when working with protein sequences", required=False)
     translate_parser.add_argument("-t", "--table", help="Path to codon usage table in csv format: 'aminoacid,triplet,value')", type=str, required=False)
 
-    # Version and end of arguments
-    parser.add_argument("-V", "--version", action="version", version=seqtools.__version__)
-    args = parser.parse_args()
+    # version and end of arguments
+    parser.add_argument("-V", "--version", action="version", version=__about__.__version__)
 
-    # Old simple stuff
-    if args.commands == 'trans':
-
-        # Input DATA
-        if args.table:
-            codon_table = pandas.read_csv(args.table, header=None)
-        else:
-            print("\n### Using sample codon usage table!!! ###")
-            codon_table = pandas.read_csv(path.join(path.dirname(path.abspath(__file__)), "data/sample_table.csv"), header=None)
-
-        # Input FASTA file
-        sequences = seqtools.io.fasta.open_fasta(args.input)
-
-        # Protein translation
-        if args.protein and not args.analyze:
-            solution = seqtools.seqtools.protein_to_dna(sequences, codon_table)
-        else:
-            solution = seqtools.seqtools.dna_operation(sequences, codon_table, args.force, args.optimize, args.analyze)
-
-        # Saving/Printing solution(s)
-        if args.output:
-            path_save = path.join(path.join(getcwd(), args.output))
-            msg_saved = "Output saved to `{0}`".format(path_save)
-            seqtools.io.output.writer(solution, path_save)
-            print(msg_saved)
-        else:
-            print()
-            print(seqtools.io.output.writer(solution))
-
-    elif args.commands == 'gen':
-        seqtools.generate.generate_dna.generate_dna(args.length, args.short, args.long, args.type2, args.gc)
+    return parser.parse_args()

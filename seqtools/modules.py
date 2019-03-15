@@ -1,4 +1,4 @@
-from util import make_triplets, bool_user_prompt
+from seqtools.util import make_triplets, bool_user_prompt
 
 
 class Sequence:
