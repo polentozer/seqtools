@@ -1,4 +1,5 @@
-from seqtools.util import make_triplets, bool_user_prompt
+import re
+from seqtools.util import make_triplets, bool_user_prompt, sequence_match
 
 
 class Sequence:
@@ -21,13 +22,23 @@ class Sequence:
 class Protein(Sequence):
     '''PROTEIN sequence object'''
 
-    allowed_characters = '*?galmfwkqespvicyhrndt'
-
     def __init__(self, sequence_id, sequence):
         super().__init__(sequence_id, sequence)
 
     def __add__(self, other):
         return Protein('concatenated', self.sequence + other.sequence)
+
+    @property
+    def sequence(self):
+        return self._sequence
+
+    @sequence.setter
+    def sequence(self, string):
+        allowed_characters = re.compile(r'[^\*\?GALMFWKQESPVICYHRNDT]')
+        if sequence_match(string, allowed_characters.search):
+            self._sequence = string
+        else:
+            raise ValueError
 
     def reverse_translate(self, codon_table):
         reverse_translation = ''
@@ -45,11 +56,7 @@ class Protein(Sequence):
 
 
 class Nucleotide(Sequence):
-    '''
-    DNA/RNA sequence object
-    '''
-
-    allowed_characters = 'acgtnu'
+    '''DNA/RNA sequence object'''
 
     def __init__(self, sequence_id, sequence):
         super().__init__(sequence_id, sequence)
@@ -58,13 +65,24 @@ class Nucleotide(Sequence):
         return Nucleotide('concatenated', self.sequence + other.sequence)
 
     @property
+    def sequence(self):
+        return self._sequence
+
+    @sequence.setter
+    def sequence(self, string):
+        allowed_characters = re.compile(r'[^ACTGNU]')
+        if not sequence_match(string, allowed_characters.search):
+            raise ValueError
+        self._sequence = string
+
+    @property
     def triplets(self):
         return make_triplets(self.sequence)
 
     @property
     def is_cds(self):
         '''Returns True if sequence is CDS or false if its not'''
-        if self.sequence[:3] == 3 and len(self) % 3 == 0:
+        if self.sequence[:3] == 'ATG' and len(self) % 3 == 0:
             return True
         else:
             return False
