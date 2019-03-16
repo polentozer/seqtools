@@ -3,7 +3,7 @@ from random import choice
 from seqtools.modules import Nucleotide
 
 
-def generate_dna(length, single_repeats=4, strand_repeats=6, type2=False, gc=False):
+def generate_dna(length, single_repeats=4, gc_streach=6, type2=False, ratio_gc=False):
     '''
     DNA generator
     '''
@@ -21,17 +21,15 @@ def generate_dna(length, single_repeats=4, strand_repeats=6, type2=False, gc=Fal
         candidate = generator(length, chars=dna)
 
         a = check_char_repeats(candidate, upper_bound=single_repeats, chars=dna)
-        b = check_gc_streach(candidate, upper_bound=strand_repeats)
+        b = check_gc_streach(candidate, upper_bound=gc_streach)
+        c = False
+        d = False
 
-        if not type2:
+        if type2:
             c = check_type2(candidate, restriction_set=restriction_enzymes)
-        else:
-            c = False
 
-        if not gc:
+        if ratio_gc:
             d = gc_cont(candidate, upper_bound=.6, lower_bound=.4)
-        else:
-            d = False
 
         if not (a or b or c or d):
             fin = Nucleotide('Generated DNA', candidate)
@@ -39,10 +37,6 @@ def generate_dna(length, single_repeats=4, strand_repeats=6, type2=False, gc=Fal
             print("\nSequence has been copied to clipboard!")
             pyperclip.copy(fin.sequence)
             return
-
-###
-# UTILS
-#
 
 
 def generator(length, chars):

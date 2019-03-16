@@ -1,4 +1,14 @@
 # include meta data
 include README.md
 include LICENSE
+include setup.cfg
 include seqtools/data/sample_table.csv
+exclude .gitignore
+exclude .coverage
+exclude .travis.yml
+prune .cache
+prune .git
+prune build
+prune dist
+recursive-exclude *.egg-info *
+recursive-include tests *

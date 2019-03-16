@@ -1,4 +1,4 @@
-from seqtools import main
+from seqtools.cli import main
 
 
 if __name__ == '__main__':

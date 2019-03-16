@@ -1,3 +1,4 @@
+import sys
 from seqtools.modules import Nucleotide, Protein
 
 
@@ -33,3 +34,18 @@ def open_fasta(file_input_paths, protein=False):
                 sequences.append(Nucleotide(seq_id, sequence))
 
     return sequences
+
+
+def write_fasta(solution_list, path=None):
+    """
+    Simple function for writing `.fasta` files.
+    """
+    if path:
+        with open(path, 'w') as file_out:
+            for sequence in solution_list:
+                if sequence:
+                    file_out.write(f'\n{sequence}\n')
+    else:
+        for sequence in solution_list:
+            if sequence:
+                sys.stdout.write(f'\n{sequence}\n')

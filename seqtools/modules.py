@@ -2,9 +2,7 @@ from seqtools.util import make_triplets, bool_user_prompt
 
 
 class Sequence:
-    '''
-    Biological sequence object.
-    '''
+    '''Biological sequence object'''
 
     def __init__(self, sequence_id, sequence):
         self.sequence_id = sequence_id
@@ -19,19 +17,17 @@ class Sequence:
     def __len__(self):
         return len(self.sequence)
 
-    @property
-    def triplets(self):
-        return make_triplets(self.sequence)
-
 
 class Protein(Sequence):
-    '''
-    PROTEIN sequence object.
-    '''
+    '''PROTEIN sequence object'''
+
     allowed_characters = '*?galmfwkqespvicyhrndt'
 
     def __init__(self, sequence_id, sequence):
         super().__init__(sequence_id, sequence)
+
+    def __add__(self, other):
+        return Protein('concatenated', self.sequence + other.sequence)
 
     def reverse_translate(self, codon_table):
         reverse_translation = ''
@@ -50,19 +46,33 @@ class Protein(Sequence):
 
 class Nucleotide(Sequence):
     '''
-    DNA/RNA sequence object.
+    DNA/RNA sequence object
     '''
 
-    allowed_characters = 'atugcn'
+    allowed_characters = 'acgtnu'
 
     def __init__(self, sequence_id, sequence):
         super().__init__(sequence_id, sequence)
 
+    def __add__(self, other):
+        return Nucleotide('concatenated', self.sequence + other.sequence)
+
+    @property
+    def triplets(self):
+        return make_triplets(self.sequence)
+
+    @property
+    def is_cds(self):
+        '''Returns True if sequence is CDS or false if its not'''
+        if self.sequence[:3] == 3 and len(self) % 3 == 0:
+            return True
+        else:
+            return False
+
     def translate(self, codon_table):
-        '''
-        Translate DNA in PROTEIN.
-        '''
-        if self.sequence[:3] != 'ATG' or len(self) % 3 != 0:
+        '''Translate DNA sequence in PROTEIN sequence'''
+
+        if not self.is_cds:
             if not bool_user_prompt(f'Sequence with ID {self.sequence_id} is not a CDS. Translate anyway?'):
                 return None
             else:
@@ -80,10 +90,9 @@ class Nucleotide(Sequence):
         return Protein(f'{new_sequence_id}|PROT', translation)
 
     def optimize_codon_usage(self, codon_table):
-        '''
-        Optimize codon usage given with codon usage table.
-        '''
-        if len(self) % 3 != 0:
+        '''Optimize codon usage given with codon usage table'''
+
+        if not self.is_cds:
             if not bool_user_prompt(f'Sequence with ID {self.sequence_id} is not a CDS. Optimize anyway?'):
                 return self
             else:
@@ -105,3 +114,11 @@ class Nucleotide(Sequence):
                 optimized_sequence += triplet
 
         return Nucleotide(f'{new_sequence_id}|OPT', optimized_sequence)
+
+    def optimization_value(self, codon_table):
+        '''
+        Calculates the codon optimization value of a given sequence
+        MAX VALUE: 1
+        MIN VALUE: 0
+        '''
+        pass
