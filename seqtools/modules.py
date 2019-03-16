@@ -1,5 +1,5 @@
 import re
-from seqtools.util import make_triplets, bool_user_prompt, sequence_match
+from seqtools.util import bool_user_prompt, sequence_match
 
 
 class Sequence:
@@ -17,6 +17,17 @@ class Sequence:
 
     def __len__(self):
         return len(self.sequence)
+
+    def kmer_occurrence(self, threshold, length=8):
+        kmers = {}
+
+        for i in range(len(self) - length + 1):
+            kmer = self.sequence[i:i + length]
+            if kmer not in kmers:
+                kmers[kmer] = 0
+            kmers[kmer] += 1
+
+        return [a for a in sorted(kmers.items(), key=lambda x: x[1]) if a[1] > threshold][::-1]
 
 
 class Protein(Sequence):
@@ -56,7 +67,7 @@ class Protein(Sequence):
 
 
 class Nucleotide(Sequence):
-    '''DNA/RNA sequence object'''
+    '''NUCLEOTIDE sequence object'''
 
     def __init__(self, sequence_id, sequence):
         super().__init__(sequence_id, sequence)
@@ -76,16 +87,16 @@ class Nucleotide(Sequence):
         self._sequence = string
 
     @property
-    def triplets(self):
-        return make_triplets(self.sequence)
-
-    @property
     def is_cds(self):
         '''Returns True if sequence is CDS or false if its not'''
         if self.sequence[:3] == 'ATG' and len(self) % 3 == 0:
             return True
         else:
             return False
+
+    def make_triplets(self):
+        '''Makes list of chunks 3 characters long from a sequence'''
+        return [self.sequence[start:start + 3] for start in range(0, len(self.sequence), 3)]
 
     def translate(self, codon_table):
         '''Translate DNA sequence in PROTEIN sequence'''
@@ -99,7 +110,7 @@ class Nucleotide(Sequence):
             new_sequence_id = self.sequence_id
 
         translation = ''
-        for triplet in self.triplets:
+        for triplet in self.make_triplets():
             if len(triplet) == 3:
                 translation += codon_table.loc[codon_table[1] == triplet][0].iloc[0][0]
             else:
@@ -119,7 +130,7 @@ class Nucleotide(Sequence):
             new_sequence_id = self.sequence_id
 
         optimized_sequence = ''
-        for triplet in self.triplets:
+        for triplet in self.make_triplets():
             if len(triplet) == 3:
                 temp_values = {}
                 temp_amino = codon_table[codon_table[1] == triplet].iloc[0][0]
@@ -139,4 +150,19 @@ class Nucleotide(Sequence):
         MAX VALUE: 1
         MIN VALUE: 0
         '''
-        pass
+        if not self.is_cds:
+            return 0
+
+        values = []
+
+        for amino, original, optimized in zip(
+                self.translate(codon_table).sequence,
+                self.make_triplets(),
+                self.optimize_codon_usage(codon_table).make_triplets()):
+
+            x = 0
+            if original == optimized:
+                x = 1
+            values.append(x)
+
+        return sum(values) / len(values)

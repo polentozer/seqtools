@@ -1,35 +1,13 @@
-"""Packaging settings."""
-
-
+'''Packaging settings.'''
 from codecs import open
 from os.path import abspath, dirname, join
-from subprocess import call
-
-from setuptools import Command, find_packages, setup
-
+from setuptools import find_packages, setup
 from seqtools import __version__
 
 
 this_dir = abspath(dirname(__file__))
-with open(join(this_dir, 'README.md'), encoding='utf-8') as f:
+with open(join(this_dir, 'README.rtf'), encoding='utf-8') as f:
     long_description = f.read()
-
-
-class RunTests(Command):
-    """Run all tests."""
-    description = 'run tests'
-    user_options = []
-
-    def initialize_options(self):
-        pass
-
-    def finalize_options(self):
-        pass
-
-    def run(self):
-        """Run all tests!"""
-        errno = call(['py.test', '--cov=seqtools', '--cov-report=term-missing'])
-        raise SystemExit(errno)
 
 
 setup(
@@ -58,7 +36,7 @@ setup(
             'data/*.csv',
         ]
     },
-    install_requires=['pandas, pyperclip'],
+    install_requires=['pandas', 'pyperclip'],
     extras_require={
         'test': ['coverage', 'pytest', 'pytest-cov'],
     },
@@ -67,5 +45,4 @@ setup(
             'seqtools=seqtools.cli:main',
         ],
     },
-    cmdclass={'test': RunTests},
 )

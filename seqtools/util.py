@@ -1,13 +1,7 @@
-import re
 import os
 import sys
 import pandas
 from distutils.util import strtobool
-
-
-def make_triplets(sequence):
-    '''Makes list of chunks 3 characters long from a sequence'''
-    return [sequence[start:start + 3] for start in range(0, len(sequence), 3)]
 
 
 def codon_table_parser(path_to_table):

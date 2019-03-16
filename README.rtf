@@ -1,0 +1,42 @@
+SEQTOOLS
+========
+
+Description
+-----------
+
+Command line tool for manipulating DNA and protein sequence data in `.fasta` files.
+
+Requirements
+
+    * pandas
+    * pyperclip
+
+Codon usage table should be provided in a `.csv` file in the following format:
+
+    aminoacid,dna_triplet,value
+    aminoacid,dna_triplet,value
+    aminoacid,dna_triplet,value
+
+
+Installation
+------------
+
+To install type in terminal:
+
+    $git clone git@github.com:polentozer/seqtools.git && cd seqtools && pip install .
+
+
+Usage
+-----
+
+Translate DNA sequence to protein sequence using genetic code table provided in the default table and print the output
+
+    $seqtools -i test_data/sample_dna.fasta
+
+Reverse-translate and codon-optimize a protein sequence and print the output
+
+    $seqtools -t test_data/sample_table.csv -i test_data/sample_prot.fasta -p
+
+Codon-optimize a DNA sequence and save the output to a file
+
+    $seqtools -O -t test_data/sample_table.csv -i test_data/sample_dna.fasta  -o test.fasta

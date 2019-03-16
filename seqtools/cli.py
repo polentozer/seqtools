@@ -8,15 +8,18 @@ Usage:
   seqtools --version
 
 Options:
-  -h --help                         Show this screen.
-  --version                         Show version.
+  -h --help                         Show this screen
+  --version                         Show version
+  gen                               Generate DNA sequence
+  trans                             Transform sequence(s)
 
 Examples:
   seqtools gen 20
-  seqtools gen 45 -
+  seqtools gen 45 -n 5 -g 10
   seqtools trans -i input.fasta
+  seqtools trans -Vi input.fasta
   seqtools trans -i input.fasta -o output.fasta
-  seqtools trans -O -i input.fasta -o output.fasta
+  seqtools trans -Oi input.fasta -o output.fasta
 
 
 Help:
@@ -50,17 +53,25 @@ def cli_argparser():
     generate_parser.add_argument('-t', '--type2', action='store_true', default=False, required=False, help='Do not check for restriction sites')
     generate_parser.add_argument('-r', '--ratio_gc', action='store_true', default=False, required=False, help='Do not limit the GC content between 0.4 and 0.6')
 
+    # analyze sequence
+    analyze_parser = subparser.add_parser("anal", help="Analyze sequence")
+
+    # analyze options
+    analyze_parser.add_argument('-t', '--threshold', action='store', type=int, help='How many times should a kmer be repeated to display it')
+    analyze_parser.add_argument('-k', '--kmer', action='store', type=int, help='Length of kmers')
+    analyze_parser.add_argument("-p", "--protein", action="store_true", help="Use this flag when input is a protein sequence", required=False)
+    analyze_parser.add_argument("-i", "--input", help="Path to input 'fasta' files", type=str, nargs='+', required=True)
+
     # translate
     translate_parser = subparser.add_parser("trans", help="Translate/optimize DNA/protein sequence")
 
     # translate options
     group = translate_parser.add_mutually_exclusive_group()
-    group.add_argument("-A", "--analyze", action="store_true", help="Use this flag to perform analysis on your sequences")
+    group.add_argument("-V", "-optvalue", action="store_true", help="Use this flag to perform optimization value analysis on your sequences")
     group.add_argument("-O", "--optimize", action="store_true", help="Use this flag to optimize DNA sequence instead translating it.")
-    translate_parser.add_argument("-f", "--force", action="store_true", help="Use this flag to omit any prompts and force the process through", required=False)
     translate_parser.add_argument("-i", "--input", help="Path to input 'fasta' files", type=str, nargs='+', required=True)
     translate_parser.add_argument("-o", "--output", help="Path for the output fasta file", type=str, nargs='?')
-    translate_parser.add_argument("-p", "--protein", action="store_true", help="Use this flag when working with protein sequences", required=False)
+    translate_parser.add_argument("-p", "--protein", action="store_true", help="Use this flag when input is a protein sequence", required=False)
     translate_parser.add_argument("-t", "--table", help="Path to codon usage table in csv format: 'aminoacid,triplet,value')", type=str, required=False)
 
     # version and end of arguments
@@ -92,8 +103,10 @@ def main():
             sequences = open_fasta(args.input)
             if args.optimize:
                 solution = [dna.optimize_codon_usage(codon_table) for dna in sequences]
-            elif args.analyze:
-                raise NotImplemented()
+            elif args.optvalue:
+                sys.stdout.write('\nOptimization values are:')
+                for dna in sequences:
+                    sys.stdout.write(f'\n{dna.sequence_id}: {dna.optimization_value(codon_table)}\n')
             else:
                 solution = [dna.translate(codon_table) for dna in sequences]
 
@@ -108,6 +121,12 @@ def main():
 
     elif args.commands == 'gen':
         generate_dna(args.length, args.single_repeats, args.gc_streach, args.type2, args.ratio_gc)
+
+    elif args.commands == 'anal':
+        sequences = open_fasta(args.input, protein=args.protein)
+        sys.stdout.write('\nK-MER analysis\n')
+        for seq in sequences:
+            sys.stdout.write(f'{seq.kmer_occurrence(threshold=args.threshold, length=args.kmer)}\n')
 
     else:
         sys.stdout.write('No arguments were given.')
