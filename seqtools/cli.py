@@ -32,6 +32,7 @@ import pandas
 import argparse
 from . import __version__ as VERSION
 from seqtools.util import codon_table_parser
+from seqtools.modules import Nucleotide, Protein
 from seqtools.io.fasta import open_fasta, write_fasta
 from seqtools.generate.generator import generate_dna
 
@@ -69,7 +70,8 @@ def cli_argparser():
     group = translate_parser.add_mutually_exclusive_group()
     group.add_argument("-V", "-optvalue", action="store_true", help="Use this flag to perform optimization value analysis on your sequences")
     group.add_argument("-O", "--optimize", action="store_true", help="Use this flag to optimize DNA sequence instead translating it.")
-    translate_parser.add_argument("-i", "--input", help="Path to input 'fasta' files", type=str, nargs='+', required=True)
+    translate_parser.add_argument("-i", "--input", help="Path to input 'fasta' files", type=str, nargs='+', required=False)
+    translate_parser.add_argument("-r", "--raw", help="Paste raw sequence", type=str, required=False)
     translate_parser.add_argument("-o", "--output", help="Path for the output fasta file", type=str, nargs='?')
     translate_parser.add_argument("-p", "--protein", action="store_true", help="Use this flag when input is a protein sequence", required=False)
     translate_parser.add_argument("-t", "--table", help="Path to codon usage table in csv format: 'aminoacid,triplet,value')", type=str, required=False)
@@ -92,21 +94,31 @@ def main():
         if args.table:
             codon_table = codon_table_parser(args.table)
         else:
-            sys.stdout.write("\n### Using sample codon usage table!!! ###\n")
+            print("\n### Using sample codon usage table!!! ###\n")
             codon_table = pandas.read_csv(os.path.join(os.path.dirname(os.path.abspath(__file__)), "data/sample_table.csv"), header=None)
 
         # protein translation
-        if args.protein and not args.analyze:
-            sequences = open_fasta(args.input, protein=True)
+        if args.protein:
+            if args.input:
+                sequences = open_fasta(args.input, protein=True)
+            else:
+                sequences = [Protein('0x0', str(args.raw))]
             solution = [protein.reverse_translate(codon_table) for protein in sequences]
+
         else:
-            sequences = open_fasta(args.input)
+            if args.input:
+                sequences = open_fasta(args.input)
+            else:
+                sequences = [Nucleotide('0x0', str(args.raw))]
+
             if args.optimize:
                 solution = [dna.optimize_codon_usage(codon_table) for dna in sequences]
-            elif args.optvalue:
-                sys.stdout.write('\nOptimization values are:')
-                for dna in sequences:
-                    sys.stdout.write(f'\n{dna.sequence_id}: {dna.optimization_value(codon_table)}\n')
+
+            # TODO 
+            # elif args.optvalue:
+            #     print('\nOptimization values are:')
+            #     for dna in sequences:
+            #         sys.stdout.write(f'\n{dna.sequence_id}: {dna.optimization_value(codon_table)}\n')
             else:
                 solution = [dna.translate(codon_table) for dna in sequences]
 
@@ -115,7 +127,7 @@ def main():
             path_save = os.path.join(os.path.join(os.getcwd(), args.output))
             msg_saved = "Output saved to `{0}`".format(path_save)
             write_fasta(solution, path_save)
-            sys.stdout.write(msg_saved)
+            print(msg_saved)
         else:
             write_fasta(solution)
 
@@ -124,9 +136,9 @@ def main():
 
     elif args.commands == 'anal':
         sequences = open_fasta(args.input, protein=args.protein)
-        sys.stdout.write('\nK-MER analysis\n')
+        print('\nK-MER analysis\n')
         for seq in sequences:
-            sys.stdout.write(f'{seq.kmer_occurrence(threshold=args.threshold, length=args.kmer)}\n')
+            print(f'{seq.kmer_occurrence(threshold=args.threshold, length=args.kmer)}\n')
 
     else:
-        sys.stdout.write('No arguments were given.')
+        print('No arguments were given.')
