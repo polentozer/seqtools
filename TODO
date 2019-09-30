@@ -1,28 +1,26 @@
--[x] dna --> prot
--[x] proper file input behaviour
-
--[x] change to package
-
--[ ] change dictionaries to lists [id, seq]
-    -[ ] io.fasta.open_fasta
-    -[ ] io.output.writer
-    -[ ] seqtools.protein_to_dna
-    -[ ] seqtools.dna_operations
-
+OPTIMIZATION
+-[ ] detect restriction sites (type2)
+    -[ ] remove restriction sites (type2)
 -[o] default genetic code tables (at least standard one)
     -[x] the "sample-one"
     -[ ] actual genetic code tables
+-[x] analyzing dna sequence optimization (from 0-100%)
+    -[ ] different optimization stages (from 0-100%)
+-[ ] optimizing GC content
 
+GENERATOR
+-[x] detect restriction sites (type2)
+-[x] optimizing GC content
+
+ANALYZIS
+-[ ] incorporate unit conversions
+-[x] kmer analysis
+
+OTHER
+-[ ] genbank (gb) input files
 -[ ] extend reverse translation to incorporate extended DNA symbols
 -[ ] detecting protein/dna sequences if no -p flag is given
--[ ] optimizing GC content
--[x] analyzing dna sequence optimization (from 0-100%)
--[ ] different optimization stages (from 0-100%)
 
--[ ] genbank (gb) input files
-
--[ ] incorporate unit conversions
--[ ] kmer analysis
 
 
 

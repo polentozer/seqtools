@@ -46,6 +46,7 @@ def cli_argparser():
     ## ===========
     parser = argparse.ArgumentParser(
         description='A command line tool for manipulating `.fasta` files')
+
     subparser = parser.add_subparsers(dest='commands')
 
     # -------------
@@ -98,8 +99,7 @@ def cli_argparser():
         help="Path to input 'fasta' files")
     analyze_parser.add_argument(
         "-i", "--input", type=str, required=False,
-        help="Paste raw sequence"
-    )
+        help="Paste raw sequence")
 
     # ------------------
     # translate
