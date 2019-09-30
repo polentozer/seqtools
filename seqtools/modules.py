@@ -155,7 +155,7 @@ class Nucleotide(Sequence):
 
         values = []
 
-        for amino, original, optimized in zip(
+        for _, original, optimized in zip(
                 self.translate(codon_table).sequence,
                 self.make_triplets(),
                 self.optimize_codon_usage(codon_table).make_triplets()):
