@@ -1,0 +1,116 @@
+WARNING:__main__:GCC --> GCT
+WARNING:__main__:GCC --> GCG
+WARNING:__main__:GCC --> GCT
+WARNING:__main__:GCC --> GCA
+WARNING:__main__:GCC --> GCA
+WARNING:__main__:GCC --> GCG
+WARNING:__main__:GCC --> GCG
+WARNING:__main__:GCC --> GCT
+WARNING:__main__:GCC --> GCT
+WARNING:__main__:GCC --> GCT
+WARNING:__main__:GCC --> GCT
+WARNING:__main__:GCC --> GCG
+WARNING:__main__:GCC --> GCT
+WARNING:__main__:GCC --> GCT
+WARNING:__main__:GCC --> GCA
+WARNING:__main__:GCC --> GCA
+WARNING:__main__:GCC --> GCT
+INFO:__main__:Checking common errors in sequence dna...
+INFO:__main__:Checking "A" homopolymer
+INFO:__main__:pass
+INFO:__main__:Checking "C" homopolymer
+INFO:__main__:pass
+INFO:__main__:Checking "G" homopolymer
+INFO:__main__:pass
+INFO:__main__:Checking "T" homopolymer
+INFO:__main__:pass
+INFO:__main__:Checking for unknown base pairs
+INFO:__main__:pass
+INFO:__main__:Checking BsaI restriction sites
+INFO:__main__:pass
+INFO:__main__:Checking BsmBI restriction sites
+INFO:__main__:pass
+INFO:__main__:Checking too short sequence
+INFO:__main__:pass
+INFO:__main__:Checking too long sequence
+INFO:__main__:pass
+WARNING:__main__:GCC --> GCT
+INFO:__main__:Checking common errors in sequence dna...
+INFO:__main__:Checking "A" homopolymer
+INFO:__main__:pass
+INFO:__main__:Checking "C" homopolymer
+INFO:__main__:pass
+INFO:__main__:Checking "G" homopolymer
+INFO:__main__:pass
+INFO:__main__:Checking "T" homopolymer
+INFO:__main__:pass
+INFO:__main__:Checking for unknown base pairs
+INFO:__main__:pass
+INFO:__main__:Checking BsaI restriction sites
+INFO:__main__:pass
+INFO:__main__:Checking BsmBI restriction sites
+INFO:__main__:pass
+INFO:__main__:Checking too short sequence
+INFO:__main__:pass
+INFO:__main__:Checking too long sequence
+INFO:__main__:pass
+WARNING:__main__:GCC --> GCT
+INFO:__main__:Checking common errors in sequence with ID "dna"...
+INFO:__main__:Checking "A" homopolymer
+INFO:__main__:pass
+INFO:__main__:Checking "C" homopolymer
+INFO:__main__:pass
+INFO:__main__:Checking "G" homopolymer
+INFO:__main__:pass
+INFO:__main__:Checking "T" homopolymer
+INFO:__main__:pass
+INFO:__main__:Checking for unknown base pairs
+INFO:__main__:pass
+INFO:__main__:Checking BsaI restriction sites
+INFO:__main__:pass
+INFO:__main__:Checking BsmBI restriction sites
+INFO:__main__:pass
+INFO:__main__:Checking too short sequence
+INFO:__main__:pass
+INFO:__main__:Checking too long sequence
+INFO:__main__:pass
+WARNING:__main__:GCC --> GCA
+INFO:__main__:Checking common errors in sequence with ID "dna"...
+INFO:__main__:Checking "A" homopolymer
+INFO:__main__:pass
+INFO:__main__:Checking "C" homopolymer
+INFO:__main__:pass
+INFO:__main__:Checking "G" homopolymer
+INFO:__main__:pass
+INFO:__main__:Checking "T" homopolymer
+INFO:__main__:pass
+INFO:__main__:Checking for unknown base pairs
+INFO:__main__:pass
+INFO:__main__:Checking BsaI restriction sites
+INFO:__main__:pass
+INFO:__main__:Checking BsmBI restriction sites
+INFO:__main__:pass
+INFO:__main__:Checking too short sequence
+INFO:__main__:pass
+INFO:__main__:Checking too long sequence
+INFO:__main__:pass
+WARNING:__main__:GCC --> GCG
+INFO:__main__:Checking common errors in sequence with ID "dna"...
+INFO:__main__:Checking "A" homopolymer
+INFO:__main__:pass
+INFO:__main__:Checking "C" homopolymer
+INFO:__main__:pass
+INFO:__main__:Checking "G" homopolymer
+INFO:__main__:pass
+INFO:__main__:Checking "T" homopolymer
+INFO:__main__:pass
+INFO:__main__:Checking for unknown base pairs
+INFO:__main__:pass
+INFO:__main__:Checking BsaI restriction sites
+INFO:__main__:pass
+INFO:__main__:Checking BsmBI restriction sites
+INFO:__main__:pass
+INFO:__main__:Checking too short sequence
+INFO:__main__:pass
+INFO:__main__:Checking too long sequence
+INFO:__main__:pass

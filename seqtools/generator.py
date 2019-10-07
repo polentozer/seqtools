@@ -1,10 +1,11 @@
+#cSpell: Disable#
 import sys
 import pyperclip
 from random import choice
 from seqtools.modules import Nucleotide
 
 
-def generate_dna(length, single_repeats=4, gc_stretch=6, type2=False, ratio_gc=False):
+def generate_dna(length, homopolymer=4, gc_stretch=6, type2=False, ratio_gc=False):
     '''
     DNA generator
     '''
@@ -22,7 +23,7 @@ def generate_dna(length, single_repeats=4, gc_stretch=6, type2=False, ratio_gc=F
         while True:
             candidate = generator(length, chars=dna)
 
-            a = check_char_repeats(candidate, upper_bound=single_repeats, chars=dna)
+            a = check_homopolymer(candidate, upper_bound=homopolymer, chars=dna)
             b = check_gc_stretch(candidate, upper_bound=gc_stretch)
             c = False
             d = False
@@ -44,7 +45,7 @@ def generate_dna(length, single_repeats=4, gc_stretch=6, type2=False, ratio_gc=F
         print(f"""\nCanceled.\n
         SETTINGS:
             length:         {length}
-            single_repeats: -n {single_repeats}
+            homopolymer: -n {homopolymer}
             gc_strech:      -g {gc_stretch}
             w/o_type2s:     -t {type2}
             gc_ratio:       -r {ratio_gc}""")
@@ -64,7 +65,7 @@ def check_type2(sequence, restriction_set):
     return False
 
 
-def check_char_repeats(sequence, upper_bound, chars):
+def check_homopolymer(sequence, upper_bound, chars):
     for char in chars:
         if char * upper_bound in sequence:
             return True

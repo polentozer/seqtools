@@ -1,3 +1,4 @@
+#cSpell: Disable#
 """
 seqtools
 
@@ -12,14 +13,16 @@ Options:
   --version                         Show version
   gen                               Generate DNA sequence
   trans                             Transform sequence(s)
+  anal                              Analyze sequences
 
 Examples:
   seqtools gen 20
   seqtools gen 45 -n 5 -g 10
-  seqtools trans -i input.fasta
-  seqtools trans -Vi input.fasta
-  seqtools trans -i input.fasta -o output.fasta
-  seqtools trans -Oi input.fasta -o output.fasta
+  seqtools trans -f input.fasta
+  seqtools trans -Oi ATGATATG
+  seqtools trans -Vf input.fasta
+  seqtools trans -f input.fasta -o output.fasta
+  seqtools trans -Of input.fasta -o output.fasta
 
 
 Help:
@@ -49,9 +52,9 @@ def cli_argparser():
 
     subparser = parser.add_subparsers(dest='commands')
 
-    # -------------
+    # ==================
     # generate dna
-    # -------------
+    # ==================
     generate_parser = subparser.add_parser(
         "gen",
         help="Generate DNA sequence")
@@ -63,7 +66,7 @@ def cli_argparser():
         'length', action='store', type=int,
         help='How long should generated DNA be')
     generate_parser.add_argument(
-        '-n', '--single_repeats', action='store', default=4, required=False, type=int,
+        '-n', '--homopolymer', action='store', default=4, required=False, type=int,
         help='Number of allowed single nucleotide repeats')
     generate_parser.add_argument(
         '-g', '--gc_streach', action='store', default=6, required=False, type=int,
@@ -75,9 +78,9 @@ def cli_argparser():
         '-r', '--ratio_gc', action='store_true', default=False, required=False,
         help='Do not limit the GC content between 0.4 and 0.6')
 
-    # ------------------
+    # ==================
     # analyze sequence
-    # ------------------
+    # ==================
     analyze_parser = subparser.add_parser(
         "anal",
         help="Analyze sequence")
@@ -101,9 +104,9 @@ def cli_argparser():
         "-i", "--input", type=str, required=False,
         help="Paste raw sequence")
 
-    # ------------------
+    # ==================
     # translate
-    # ------------------
+    # ==================
     translate_parser = subparser.add_parser(
         "trans",
         help="Translate/optimize DNA/protein sequence")
@@ -196,7 +199,7 @@ def main():
     elif args.commands == 'gen':
         generate_dna(
             args.length,
-            args.single_repeats,
+            args.homopolymer,
             args.gc_streach,
             args.type2,
             args.ratio_gc

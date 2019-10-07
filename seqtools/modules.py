@@ -1,5 +1,6 @@
+#cSpell: Disable#
 import re
-from seqtools.util import bool_user_prompt, sequence_match
+from seqtools.util import bool_user_prompt, sequence_match, get_codon
 
 
 class Sequence:
@@ -17,6 +18,11 @@ class Sequence:
 
     def __len__(self):
         return len(self.sequence)
+    
+    ### check how to check if seq is prot or nuc
+    ### then you can delete __add__ methods from the Protein and Nucleotide classes
+    # def __add__(self, other):
+    #     return self.sequence + other.sequence
 
     def kmer_occurrence(self, threshold, length=8):
         kmers = {}
@@ -51,19 +57,19 @@ class Protein(Sequence):
         else:
             raise ValueError
 
-    def reverse_translate(self, codon_table):
-        reverse_translation = ''
-        for amino in self.sequence:
-            temp_values = []
-            temp_triplets = []
+    def reverse_translate(self, table, maximum=False):
+        '''Returns optimized DNA sequence'''
+        dna_sequence = list()
+        if maximum:
+            name = f'{self.sequence_id}|NUC-MAX'
+            for amino in self.sequence:
+                dna_sequence.append(get_codon(table, amino, maximum=True))
+        else:
+            name = f'{self.sequence_id}|NUC'
+            for amino in self.sequence:
+                dna_sequence.append(get_codon(table, amino))
 
-            for _, row in codon_table.loc[codon_table[0] == amino].iterrows():
-                temp_triplets.append(row[1])
-                temp_values.append(row[2])
-
-            reverse_translation += temp_triplets[temp_values.index(max(temp_values))]
-
-        return Nucleotide(f'{self.sequence_id}|NUC', reverse_translation)
+        return Nucleotide(name, ''.join(dna_sequence))
 
 
 class Nucleotide(Sequence):
@@ -94,35 +100,49 @@ class Nucleotide(Sequence):
         else:
             return False
 
+    def reverse_complement(self):
+        '''Returns reverse complement of given DNA sequence'''
+        return Nucleotide(f'{self.sequence_id}|REVCOMP',
+            self.sequence.translate(str.maketrans("ACGT", "TGCA")[::-1]))
+
     def make_triplets(self):
         '''Makes list of chunks 3 characters long from a sequence'''
         return [self.sequence[start:start + 3] for start in range(0, len(self.sequence), 3)]
 
-    def translate(self, codon_table):
+    def translate(self, table):
         '''Translate DNA sequence in PROTEIN sequence'''
+        prompt = f'Sequence with ID {self.sequence_id} is not a CDS. Translate anyway?'
 
         if not self.is_cds:
-            if not bool_user_prompt(f'Sequence with ID {self.sequence_id} is not a CDS. Translate anyway?'):
+            if not bool_user_prompt(prompt):
                 return None
             else:
                 new_sequence_id = f'{self.sequence_id}|FORCED'
         else:
             new_sequence_id = self.sequence_id
 
-        translation = ''
+        translation = list()
+        table = table.reset_index(level='Triplet')
+
         for triplet in self.make_triplets():
             if len(triplet) == 3:
-                translation += codon_table.loc[codon_table[1] == triplet][0].iloc[0][0]
+                translation.append(table[table['Triplet'] == triplet].index[0])
             else:
-                translation += '?'
+                translation.append('?')
 
-        return Protein(f'{new_sequence_id}|PROT', translation)
+        return Protein(f'{new_sequence_id}|PROT', ''.join(translation))
+    
+    # def generate_codon_dictionary(self, codon_table):
+    #     '''Returns dictionary to store the codons that have been attempted thus far'''
+    #     return dict(enumerate(zip(self.translate(codon_table),
+    #                 [[self.sequence[n:n+3]] for n in range(0, self.len, 3)])))
 
     def optimize_codon_usage(self, codon_table):
         '''Optimize codon usage given with codon usage table'''
+        prompt = f'Sequence with ID {self.sequence_id} is not a CDS. Optimize anyway?'
 
         if not self.is_cds:
-            if not bool_user_prompt(f'Sequence with ID {self.sequence_id} is not a CDS. Optimize anyway?'):
+            if not bool_user_prompt(prompt):
                 return self
             else:
                 new_sequence_id = f'{self.sequence_id}|FORCED'

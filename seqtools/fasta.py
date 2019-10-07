@@ -1,3 +1,4 @@
+#cSpell: Disable#
 import sys
 from seqtools.modules import Nucleotide, Protein
 
