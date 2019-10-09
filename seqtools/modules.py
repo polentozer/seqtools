@@ -1,32 +1,40 @@
 #cSpell: Disable#
 import re
-from seqtools.util import bool_user_prompt, sequence_match, get_codon
+import logging
+from seqtools.seqtools_config import GGA_PART_TYPES, LOGGING_CONFIG
+from seqtools.util import bool_user_prompt, sequence_match, get_codon, load_codon_table
+
+## LEGACY ##
+DEFAULT_TABLE = load_codon_table(species='yali')
 
 
 class Sequence:
     '''Biological sequence object'''
 
-    def __init__(self, sequence_id, sequence):
+    def __init__(self, sequence_id, sequence, logger=None):
         self.sequence_id = sequence_id
         self.sequence = sequence.upper()
+        self.logger = logger or logging.getLogger(__name__)
 
     def __repr__(self):
-        return f'{self.sequence_id}, {self.sequence}'
+        return f'Sequence: >{self.sequence_id} {self.sequence}'
 
     def __str__(self):
-        return f'>{self.sequence_id}\n{self.sequence}'
+        return self.sequence
 
     def __len__(self):
         return len(self.sequence)
-    
-    ### check how to check if seq is prot or nuc
-    ### then you can delete __add__ methods from the Protein and Nucleotide classes
-    # def __add__(self, other):
-    #     return self.sequence + other.sequence
+
+    def __add__(self, other):
+        return Sequence('concat', self.sequence + other.sequence)
+
+    @property
+    def fasta(self):
+        return f'>{self.sequence_id}\n{self.sequence}\n'
 
     def kmer_occurrence(self, threshold, length=8):
+        self.logger.debug('Calculating k-mer occurrence...')
         kmers = {}
-
         for i in range(len(self) - length + 1):
             kmer = self.sequence[i:i + length]
             if kmer not in kmers:
@@ -43,7 +51,10 @@ class Protein(Sequence):
         super().__init__(sequence_id, sequence)
 
     def __add__(self, other):
-        return Protein('concatenated', self.sequence + other.sequence)
+        return Protein('concat', self.sequence + other.sequence)
+
+    def __repr__(self):
+        return f'Protein_Sequence: >{self.sequence_id} {self.sequence}'
 
     @property
     def sequence(self):
@@ -51,25 +62,30 @@ class Protein(Sequence):
 
     @sequence.setter
     def sequence(self, string):
-        allowed_characters = re.compile(r'[^\*\?GALMFWKQESPVICYHRNDT]')
-        if sequence_match(string, allowed_characters.search):
-            self._sequence = string
-        else:
+        allowed_characters = re.compile(r'[^\*\?GALMFWKQESPVICYHRNDTX]')
+        if not sequence_match(string, allowed_characters.search):
+            self.logger.error('Protein sequence includes unallowed character(s)')
             raise ValueError
+        self._sequence = string
 
-    def reverse_translate(self, table, maximum=False):
+    def reverse_translate(self, table=DEFAULT_TABLE, maximum=False):
         '''Returns optimized DNA sequence'''
+        self.logger.debug('Making reverse translation...')
         dna_sequence = list()
         if maximum:
-            name = f'{self.sequence_id}|NUC-MAX'
-            for amino in self.sequence:
-                dna_sequence.append(get_codon(table, amino, maximum=True))
+            name = '|NUC-MAX'
+            maximum = True
         else:
-            name = f'{self.sequence_id}|NUC'
-            for amino in self.sequence:
-                dna_sequence.append(get_codon(table, amino))
+            name = '|NUC'
+            maximum = False
+        for amino in self.sequence:
+            if amino == '?':
+                dna_sequence.append('NNN')
+            else:
+                codons = table.loc[amino]
+                dna_sequence.append(get_codon(codons, maximum=maximum))
 
-        return Nucleotide(name, ''.join(dna_sequence))
+        return Nucleotide(f'{self.sequence_id}{name}', ''.join(dna_sequence))
 
 
 class Nucleotide(Sequence):
@@ -79,7 +95,10 @@ class Nucleotide(Sequence):
         super().__init__(sequence_id, sequence)
 
     def __add__(self, other):
-        return Nucleotide('concatenated', self.sequence + other.sequence)
+        return Nucleotide('concat', self.sequence + other.sequence)
+
+    def __repr__(self):
+        return f'Nucleotide_Sequence: >{self.sequence_id} {self.sequence}'
 
     @property
     def sequence(self):
@@ -89,100 +108,203 @@ class Nucleotide(Sequence):
     def sequence(self, string):
         allowed_characters = re.compile(r'[^ACTGNU]')
         if not sequence_match(string, allowed_characters.search):
+            self.logger.error('Nucleotide sequence includes unallowed character(s)')
             raise ValueError
         self._sequence = string
 
     @property
-    def is_cds(self):
+    def basic_cds(self):
         '''Returns True if sequence is CDS or false if its not'''
+        self.logger.debug('Checking basic CDS...')
         if self.sequence[:3] == 'ATG' and len(self) % 3 == 0:
             return True
-        else:
-            return False
+        self.logger.error(f'{self.sequence_id} is not a CDS')
+        return False
 
+    def check_cds(self):
+        '''Checks CDS'''
+        self.logger.debug('Checking CDS...')
+        def triplet(self):
+            return len(self) % 3 == 0
+
+        def start(self):
+            return self.sequence[:3] == 'ATG'
+
+        def stop(self):
+            prot = self.translate(check=True)
+            return prot.sequence[-1] == "*"
+
+        def no_internal_stop(self):
+            prot = self.translate(check=True)
+            return not "*" in prot.sequence[:-1]
+
+        tests = [triplet, start, stop, no_internal_stop]
+        result = True
+        for test in tests:
+            if not test(self):
+                self.logger.error(f'{self.sequence_id} failed on {test.__name__}')
+                result = False
+
+        return result
+
+    @property
     def reverse_complement(self):
         '''Returns reverse complement of given DNA sequence'''
-        return Nucleotide(f'{self.sequence_id}|REVCOMP',
-            self.sequence.translate(str.maketrans("ACGT", "TGCA")[::-1]))
+        self.logger.debug('Making reverse complement...')
+        return Nucleotide(f'{self.sequence_id}|REVC',
+            self.sequence.translate(str.maketrans("ACGT", "TGCA"))[::-1])
 
     def make_triplets(self):
         '''Makes list of chunks 3 characters long from a sequence'''
+        self.logger.debug('Making triplets...')
         return [self.sequence[start:start + 3] for start in range(0, len(self.sequence), 3)]
 
-    def translate(self, table):
+    def translate(self, table=DEFAULT_TABLE, check=False):
         '''Translate DNA sequence in PROTEIN sequence'''
-        prompt = f'Sequence with ID {self.sequence_id} is not a CDS. Translate anyway?'
-
-        if not self.is_cds:
-            if not bool_user_prompt(prompt):
-                return None
-            else:
-                new_sequence_id = f'{self.sequence_id}|FORCED'
-        else:
-            new_sequence_id = self.sequence_id
-
+        self.logger.debug('Making translation...')
+        if not check:
+            if not self.basic_cds:
+                self = bool_user_prompt(self, 'Translate')
+                if 'FORCED' not in self.sequence_id:
+                    return self
+                else:
+                    self.logger.debug('Continuing with "FORCED"...')
+        seq_id = self.sequence_id
         translation = list()
         table = table.reset_index(level='Triplet')
-
         for triplet in self.make_triplets():
             if len(triplet) == 3:
                 translation.append(table[table['Triplet'] == triplet].index[0])
             else:
                 translation.append('?')
 
-        return Protein(f'{new_sequence_id}|PROT', ''.join(translation))
-    
-    # def generate_codon_dictionary(self, codon_table):
-    #     '''Returns dictionary to store the codons that have been attempted thus far'''
-    #     return dict(enumerate(zip(self.translate(codon_table),
-    #                 [[self.sequence[n:n+3]] for n in range(0, self.len, 3)])))
+        return Protein(f'{seq_id}|PROT', ''.join(translation))
 
-    def optimize_codon_usage(self, codon_table):
-        '''Optimize codon usage given with codon usage table'''
-        prompt = f'Sequence with ID {self.sequence_id} is not a CDS. Optimize anyway?'
-
-        if not self.is_cds:
-            if not bool_user_prompt(prompt):
-                return self
+    def check_common_errors(self):
+        self.logger.debug('Checking common errors on DNA sequence')
+        self.logger.info(f'Checking common errors in sequence with ID "{self.sequence_id}"...')
+        for nucleotide in 'ACGT':
+            self.logger.info(f'Checking "{nucleotide}" homopolymer')
+            if nucleotide * 11 in self.sequence:
+                self.logger.warning(f'ID "{self.sequence_id}" failed on long "{nucleotide}" homopolymer')
             else:
-                new_sequence_id = f'{self.sequence_id}|FORCED'
+                self.logger.info("pass")
+        self.logger.info(f'Checking for unknown base pairs')
+        if 'N' in self.sequence:
+            self.logger.warning(f'ID "{self.sequence_id}" failed on "N" (unknown base pair) in sequence')
         else:
-            new_sequence_id = self.sequence_id
+                self.logger.info("pass")
+        self.logger.info(f'Checking BsaI restriction sites')
+        if 'GGTCTC' in self.sequence or 'GAGACC' in self.sequence:
+            self.logger.warning(f'ID "{self.sequence_id}" failed on BsaI restriction sites')
+        else:
+                self.logger.info("pass")
+        self.logger.info(f'Checking BsmBI restriction sites')
+        if 'CGTCTC' in self.sequence or 'GAGACG' in self.sequence:
+            self.logger.warning(f'ID "{self.sequence_id}" failed on BsmBI restriction sites')
+        else:
+                self.logger.info("pass")
+        self.logger.info(f'Checking too short sequence')
+        if len(self) < 10:
+            self.logger.warning(f'ID "{self.sequence_id}" failed on small sequence (<10 bp)')
+        else:
+                self.logger.info("pass")
+        self.logger.info(f'Checking too long sequence')
+        if len(self) > 20000:
+            self.logger.warning(f'ID "{self.sequence_id}" failed on long sequence (>20 kbp)')
+        else:
+                self.logger.info("pass")
+        return
 
-        optimized_sequence = ''
-        for triplet in self.make_triplets():
-            if len(triplet) == 3:
-                temp_values = {}
-                temp_amino = codon_table[codon_table[1] == triplet].iloc[0][0]
+    def recode_sequence(self, replace, table=DEFAULT_TABLE, maximum=False):
+        '''Recode a sequence to replace certain sequences using a given codon table.'''
+        position = self.sequence.find(replace)
+        if position < 0:
+            return self
+        position -= position % 3
+        for i in range(position, position + (len(replace) // 3 + 1) * 3, 3):
+            codon = self.sequence[i:i+3]
+            options = table.loc[table.xs(codon, level=1).index[0]]
+            if options.shape[0] == 1:
+                continue
+            if options.shape[0] > 0:
+                new_codon = get_codon(options, maximum=maximum, recode=True, skip=[codon])
+                break
+        self.logger.warning(f'{codon} --> {new_codon}')
+        if '|REC' not in self.sequence_id:
+            self.sequence_id += '|REC'
+        self.sequence = f'{self.sequence[:i]}{new_codon}{self.sequence[i+3:]}'
 
-                for _, row in codon_table[codon_table[0] == temp_amino].iterrows():
-                    temp_values[row[1]] = row[2]
+        return self
 
-                optimized_sequence += max(temp_values, key=temp_values.get)
-            else:
-                optimized_sequence += triplet
+    def remove_cutsites(self, restriction_enzymes, table=DEFAULT_TABLE):
+        '''Remove recognition sites for restriction enzymes.'''
+        self.logger.info(f'Removing cutsites for {restriction_enzymes}')
+        changes = 0
+        for enzyme in restriction_enzymes:
+            for cutsite in enzyme.cutsite_list:
+                while cutsite in self.sequence:
+                    self.logger.warning(f'{enzyme.enzyme_id} cuts ({cutsite})')
+                    changes += 1
+                    self = self.recode_sequence(cutsite, table=table)
+        self.logger.info(f'remove_cutsites made {changes} changes in {self.sequence_id} sequence')
 
-        return Nucleotide(f'{new_sequence_id}|OPT', optimized_sequence)
+        return self
 
-    def optimization_value(self, codon_table):
-        '''
-        Calculates the codon optimization value of a given sequence
-        MAX VALUE: 1
-        MIN VALUE: 0
-        '''
-        if not self.is_cds:
-            return 0
+    def optimize_codon_usage(self, table=DEFAULT_TABLE, maximum=False):
+        '''Optimize codon usage of a given DNA sequence'''
+        self.logger.debug('Optimizing codon usage...')
+        if not self.basic_cds:
+            self = bool_user_prompt(self, 'Optimize')
+            if 'FORCED' not in self.sequence_id:
+                return self
+        seq_id = self.sequence_id
+        optimized = self.translate(table=table).reverse_translate(table=table, maximum=maximum)
 
-        values = []
+        return Nucleotide(f'{seq_id}|OPT', optimized.sequence)
 
-        for _, original, optimized in zip(
-                self.translate(codon_table).sequence,
-                self.make_triplets(),
-                self.optimize_codon_usage(codon_table).make_triplets()):
+    def make_part(self, part_type='3t', part_options=GGA_PART_TYPES):
+        '''Make DNA part out of a given sequence'''
+        self.logger.debug('Making parts...')
+        seq_id = f'part_gge{part_type}_{self.sequence_id}'
+        part = part_options[f'type{part_type}']
+        if part_type in ('3t', '3a', '3b'):
+            sequence = f'{part["prefix"]}{self.sequence[:-3]}{part["suffix"]}'
+        else:
+            sequence = f'{part["prefix"]}{self.sequence}{part["suffix"]}'
 
-            x = 0
-            if original == optimized:
-                x = 1
-            values.append(x)
+        return Nucleotide(seq_id, sequence)
 
-        return sum(values) / len(values)
+
+class Enzyme:
+    def __init__(self, enzyme_id, substrate, enzyme_description=None, logger=None):
+        self.enzyme_id = enzyme_id
+        self.substrate = substrate
+        self.enzyme_description = enzyme_description
+        self.logger = logger or logging.getLogger(__name__)
+
+    def __repr__(self):
+        return f'Enzyme: {self.enzyme_id}'
+
+    def __str__(self):
+        return self.enzyme_id
+
+
+class Restriction_Enzyme(Enzyme):
+    def __init__(self, enzyme_id, substrate, recognition_sequence, jump=0, overhang=0,
+                 enzyme_description=None):
+        super().__init__(enzyme_id, substrate, enzyme_description)
+        self.recognition_sequence = Nucleotide(enzyme_id, recognition_sequence)
+        self.jump = jump
+        self.overhang = overhang
+
+    def __repr__(self):
+        return f'Restriction_Enzyme: {self.enzyme_id} ({self.recognition_sequence})'
+
+    def __str__(self):
+        return f'{self.enzyme_id} >> {self.recognition_sequence.sequence}' 
+
+    @property
+    def cutsite_list(self):
+        self.logger.debug('Generating cutsite_list from Restriction_Enzyme')
+        return [self.recognition_sequence.sequence, self.recognition_sequence.reverse_complement.sequence]

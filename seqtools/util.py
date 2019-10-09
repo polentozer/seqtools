@@ -1,29 +1,79 @@
 #cSpell: Disable#
 import os
-import sys
 import pandas
-import numpy as np
+import signal
+from random import random
 from distutils.util import strtobool
+from seqtools.seqtools_config import LOGGING_CONFIG
 
 
-def codon_table_parser(path_to_table):
-    if not path_to_table:
-        return None
+CODON_USAGE_DB = f'{os.path.dirname(__file__)}/data/codon_usage.spsum'
+CUSTOM_CODON_USAGE_DB = f'{os.path.dirname(__file__)}/data/custom_table.spsum'
+COMMON_SPECIES = {
+    'ecoli': '83333',
+    'yeast':  '4932',
+    'human': '9606',
+    'bsub': '1432',
+    'yali': '284591'
+}
+CODONS = [
+    'CGA', 'CGC', 'CGG', 'CGT', 'AGA', 'AGG', 'CTA', 'CTC',
+    'CTG', 'CTT', 'TTA', 'TTG', 'TCA', 'TCC', 'TCG', 'TCT',
+    'AGC', 'AGT', 'ACA', 'ACC', 'ACG', 'ACT', 'CCA', 'CCC',
+    'CCG', 'CCT', 'GCA', 'GCC', 'GCG', 'GCT', 'GGA', 'GGC',
+    'GGG', 'GGT', 'GTA', 'GTC', 'GTG', 'GTT', 'AAA', 'AAG',
+    'AAC', 'AAT', 'CAA', 'CAG', 'CAC', 'CAT', 'GAA', 'GAG',
+    'GAC', 'GAT', 'TAC', 'TAT', 'TGC', 'TGT', 'TTC', 'TTT',
+    'ATA', 'ATC', 'ATT', 'ATG', 'TGG', 'TAA', 'TAG', 'TGA'
+]
 
-    _, extension = os.path.splitext(path_to_table)
+STANDARD_GENETIC_CODE = [
+    'R', 'R', 'R', 'R', 'R', 'R', 'L', 'L',
+    'L', 'L', 'L', 'L', 'S', 'S', 'S', 'S',
+    'S', 'S', 'T', 'T', 'T', 'T', 'P', 'P',
+    'P', 'P', 'A', 'A', 'A', 'A', 'G', 'G',
+    'G', 'G', 'V', 'V', 'V', 'V', 'K', 'K',
+    'N', 'N', 'Q', 'Q', 'H', 'H', 'E', 'E',
+    'D', 'D', 'Y', 'Y', 'C', 'C', 'F', 'F',
+    'I', 'I', 'I', 'M', 'W', '*', '*', '*'
+]
 
-    if extension == '.csv':
-        return pandas.read_csv(path_to_table, header=None)
+####### TIMEOUT DECORATOR #######
+class TimeoutError(Exception):
+    def __init__(self, value='Timed Out'):
+        self.value = value
+    def __str__(self):
+        return repr(self.value)
 
-    raise ValueError('Codon table is not in the CSV format.')
+def timeout(seconds_before_timeout):
+    def decorate(f):
+        def handler(signum, frame):
+            raise TimeoutError()
+        def new_f(*args, **kwargs):
+            old = signal.signal(signal.SIGALRM, handler)
+            signal.alarm(seconds_before_timeout)
+            try:
+                result = f(*args, **kwargs)
+            finally:
+                # reinstall the old signal handler
+                signal.signal(signal.SIGALRM, old)
+                # cancel the alarm
+                signal.alarm(0)
+            return result
+        new_f.__name__ = f.__name__
+        return new_f
+    return decorate
+#################################
 
 
-def bool_user_prompt(question):
-    '''Prompts user for YES/NO response'''
-    print(f'\n{question} [y/n]')
+def bool_user_prompt(nucleotide_obj, operation):
+    '''Prompts user for YES/NO response. Version 2.'''
+    print(f'Sequence with ID {nucleotide_obj.sequence_id} is not a CDS. {operation} anyway? [y/n]')
     while True:
         try:
-            return strtobool(input().lower())
+            if strtobool(input().lower()):
+                nucleotide_obj.sequence_id += '|FORCED'
+            return nucleotide_obj
         except ValueError:
             print('Please respond with "yes" or "no".')
 
@@ -33,53 +83,24 @@ def sequence_match(string, search):
     return not bool(search(string))
 
 
+def melting_temperature(dna_sequence):
+    '''Calculate and return the Tm using the "Wallace rule".
+
+    Tm = 4 degC * (G+C) + 2 degC * (A+T)
+
+    The Wallace rule (Thein & Wallace 1986, in Human genetic diseases: a
+    practical approach, 33-50) is often used as rule of thumb for approximate
+    Tm calculations for primers of 14 to 20 nt length.
+
+    Non-dNA characters (e.g. E, F, J, !, 1, etc) are ignored in this method.
+    '''
+    weak = ('A', 'T', 'W')
+    strong = ('C', 'G', 'S')
+    return 2 * sum(map(dna_sequence.count, weak)) + 4 * sum(map(dna_sequence.count, strong))
+
+
 def load_codon_table(species=None, taxonomy_id=None, custom=False):
     '''Load a codon table based on the organism's species ID'''
-    CODON_USAGE_DB = f'{os.path.dirname(__file__)}/data/codon_usage.spsum'
-    CUSTOM_CODON_USAGE_DB = f'{os.path.dirname(__file__)}/data/custom_table.spsum'
-    COMMON_SPECIES = {
-        'ecoli': '83333',
-        'yeast':  '4932',
-        'human': '9606',
-        'bsub': '1432',
-        'yali': '284591'
-    }
-
-    codons = [
-        'CGA', 'CGC', 'CGG', 'CGT',
-        'AGA', 'AGG', 'CTA', 'CTC',
-        'CTG', 'CTT', 'TTA', 'TTG',
-        'TCA', 'TCC', 'TCG', 'TCT',
-        'AGC', 'AGT', 'ACA', 'ACC',
-        'ACG', 'ACT', 'CCA', 'CCC',
-        'CCG', 'CCT', 'GCA', 'GCC',
-        'GCG', 'GCT', 'GGA', 'GGC',
-        'GGG', 'GGT', 'GTA', 'GTC',
-        'GTG', 'GTT', 'AAA', 'AAG',
-        'AAC', 'AAT', 'CAA', 'CAG',
-        'CAC', 'CAT', 'GAA', 'GAG',
-        'GAC', 'GAT', 'TAC', 'TAT',
-        'TGC', 'TGT', 'TTC', 'TTT',
-        'ATA', 'ATC', 'ATT', 'ATG',
-        'TGG', 'TAA', 'TAG', 'TGA'
-    ]
-    standard_genetic_code = [
-        'R', 'R', 'R', 'R',
-        'R', 'R', 'L', 'L',
-        'L', 'L', 'L', 'L',
-        'S', 'S', 'S', 'S',
-        'S', 'S', 'T', 'T',
-        'T', 'T', 'P', 'P',
-        'P', 'P', 'A', 'A',
-        'A', 'A', 'G', 'G',
-        'G', 'G', 'V', 'V',
-        'V', 'V', 'K', 'K',
-        'N', 'N', 'Q', 'Q',
-        'H', 'H', 'E', 'E',
-        'D', 'D', 'Y', 'Y',
-        'C', 'C', 'F', 'F',
-        'I', 'I', 'I', 'M',
-        'W', '*', '*', '*']
 
     if species in COMMON_SPECIES:
         taxonomy_id = COMMON_SPECIES[species]
@@ -98,22 +119,36 @@ def load_codon_table(species=None, taxonomy_id=None, custom=False):
             if taxonomy_id and taxonomy_id != taxid:
                 continue
 
-            table = list(zip(codons, standard_genetic_code, [int(x) for x in codon_counts.split()]))
+            table = list(
+                zip(CODONS, STANDARD_GENETIC_CODE, [int(x) for x in codon_counts.split()]))
             table = pandas.DataFrame(table, columns=['Triplet', 'AA', 'Number'])
             table.set_index(['AA', 'Triplet'], inplace=True)
             table.sort_index(inplace=True)
 
             table['Fraction'] = table.groupby('AA').transform(lambda x: x / x.sum())
             break
-    
+
     return table
 
 
-def get_codon(table, amino, maximum=False):
-    '''Returns a "locally-optimized" codon for a given amino acid
-    based on the single letter code. Locally-optimized = mimics the
+def get_codon(codons, maximum=False, recode=False, skip=[]):
+    '''Returns a "locally-optimized" codon. Locally-optimized = mimics the
     codon frequency in the table. Maximum uses the most common codon.'''
-    c = table.loc[amino]
+    if recode:
+        codons = codons.loc[[cod for cod in codons.index if cod not in skip]]
+    # Deterministic allocation of codon based on the highest frequency
     if maximum:
-        return c[c.Fraction == c.Fraction.max()].index[0]
-    return c.iloc[(c.Fraction.cumsum() / c.Fraction.cumsum().max() < np.random.rand()).sum()].name
+        return codons.Fraction.idxmax()
+    # Stochastic allocation of codon
+    x = codons.Fraction.cumsum() / codons.Fraction.cumsum().max() < random()
+
+    return codons.iloc[x.sum()].name
+
+
+def codon_table_10plus(table):
+    '''Return a codon table only representing codons with > 10% occurrence frequency.'''
+
+    table = table[table.Fraction >= 0.1]
+    table = table.groupby(level=0).transform(lambda x: x / x.sum())
+
+    return table

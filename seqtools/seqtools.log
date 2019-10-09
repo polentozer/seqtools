@@ -114,3 +114,69 @@ INFO:__main__:Checking too short sequence
 INFO:__main__:pass
 INFO:__main__:Checking too long sequence
 INFO:__main__:pass
+BsaI cuts (GAGACC)
+GAG --> GAA
+BsmBI cuts (GAGACG)
+GAG --> GAA
+BpiI cuts (GAAGAC)
+GAA --> GAG
+BpiI cuts (GAAGAC)
+CTG --> CTT
+BpiI cuts (GTCTTC)
+GTC --> GTT
+EcoRI cuts (GAATTC)
+GGA --> GGT
+remove_cutsites made 6 changes in idi1|OPT|REC sequence
+2019-10-09 16:15:51,977 test.py __main__ WARNING BsaI cuts (GGTCTC)
+2019-10-09 16:15:51,984 test.py __main__ WARNING GGT --> GGA
+2019-10-09 16:15:51,984 test.py __main__ WARNING BsaI cuts (GAGACC)
+2019-10-09 16:15:51,991 test.py __main__ WARNING GAG --> GAA
+2019-10-09 16:15:51,992 test.py __main__ WARNING BsmBI cuts (GAGACG)
+2019-10-09 16:15:51,998 test.py __main__ WARNING GAG --> GAA
+2019-10-09 16:15:51,998 test.py __main__ WARNING BpiI cuts (GAAGAC)
+2019-10-09 16:15:52,002 test.py __main__ WARNING ACG --> ACA
+2019-10-09 16:15:52,003 test.py __main__ WARNING BpiI cuts (GTCTTC)
+2019-10-09 16:15:52,008 test.py __main__ WARNING AGG --> CGA
+2019-10-09 16:15:52,008 test.py __main__ WARNING EcoRI cuts (GAATTC)
+2019-10-09 16:15:52,012 test.py __main__ WARNING GAA --> GAG
+2019-10-09 16:15:52,013 test.py __main__ INFO remove_cutsites made 6 changes in idi1|OPT|REC sequence
+2019-10-09 16:16:20,135 test.py __main__ WARNING BsaI cuts (GGTCTC)
+2019-10-09 16:16:20,141 test.py __main__ WARNING GTC --> GTT
+2019-10-09 16:16:20,141 test.py __main__ WARNING BpiI cuts (GAAGAC)
+2019-10-09 16:16:20,146 test.py __main__ WARNING CTG --> CTT
+2019-10-09 16:16:20,146 test.py __main__ WARNING BpiI cuts (GTCTTC)
+2019-10-09 16:16:20,154 test.py __main__ WARNING GTC --> GTT
+2019-10-09 16:16:20,154 test.py __main__ INFO remove_cutsites made 3 changes in idi1|OPT|REC sequence
+2019-10-09 16:18:24,496 test.py __main__ WARNING BsaI cuts (GAGACC)
+2019-10-09 16:18:24,504 test.py __main__ WARNING GAG --> GAA
+2019-10-09 16:18:24,504 test.py __main__ WARNING BsmBI cuts (GAGACG)
+2019-10-09 16:18:24,511 test.py __main__ WARNING GAG --> GAA
+2019-10-09 16:18:24,511 test.py __main__ INFO remove_cutsites made 2 changes in idi1|OPT|REC sequence
+2019-10-09 16:19:22,386 test.py __main__ WARNING BsaI cuts (GAGACC)
+2019-10-09 16:19:22,391 test.py __main__ WARNING GAG --> GAA
+2019-10-09 16:19:22,391 test.py __main__ WARNING BsmBI cuts (GAGACG)
+2019-10-09 16:19:22,396 test.py __main__ WARNING GAG --> GAA
+2019-10-09 16:19:22,396 test.py __main__ WARNING BpiI cuts (GAAGAC)
+2019-10-09 16:19:22,403 test.py __main__ WARNING GAA --> GAG
+2019-10-09 16:19:22,404 test.py __main__ WARNING EcoRI cuts (GAATTC)
+2019-10-09 16:19:22,409 test.py __main__ WARNING GAA --> GAG
+2019-10-09 16:19:22,409 test.py __main__ INFO remove_cutsites made 4 changes in idi1|OPT|REC sequence
+2019-10-09 16:19:36,156 test.py __main__ WARNING BsaI cuts (GGTCTC)
+2019-10-09 16:19:36,161 test.py __main__ WARNING GTC --> GTG
+2019-10-09 16:19:36,161 test.py __main__ WARNING BsaI cuts (GAGACC)
+2019-10-09 16:19:36,164 test.py __main__ WARNING GAG --> GAA
+2019-10-09 16:19:36,165 test.py __main__ WARNING BpiI cuts (GAAGAC)
+2019-10-09 16:19:36,171 test.py __main__ WARNING GAA --> GAG
+2019-10-09 16:19:36,172 test.py __main__ WARNING BpiI cuts (GAAGAC)
+2019-10-09 16:19:36,175 test.py __main__ WARNING GAA --> GAG
+2019-10-09 16:19:36,175 test.py __main__ WARNING BpiI cuts (GAAGAC)
+2019-10-09 16:19:36,178 test.py __main__ WARNING CTG --> TTG
+2019-10-09 16:19:36,178 test.py __main__ WARNING BpiI cuts (GAAGAC)
+2019-10-09 16:19:36,182 test.py __main__ WARNING TTG --> CTG
+2019-10-09 16:19:36,182 test.py __main__ WARNING BpiI cuts (GAAGAC)
+2019-10-09 16:19:36,189 test.py __main__ WARNING CTG --> CTT
+2019-10-09 16:19:36,189 test.py __main__ WARNING EcoRI cuts (GAATTC)
+2019-10-09 16:19:36,195 test.py __main__ WARNING GAA --> GAG
+2019-10-09 16:19:36,196 test.py __main__ WARNING EcoRI cuts (GAATTC)
+2019-10-09 16:19:36,201 test.py __main__ WARNING AGA --> AGG
+2019-10-09 16:19:36,201 test.py __main__ INFO remove_cutsites made 9 changes in idi1|OPT|REC sequence

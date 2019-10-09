@@ -1,13 +1,9 @@
-#cSpell: Disable#
-import sys
 from seqtools.modules import Nucleotide, Protein
 
 
 def open_fasta(file_input_paths, protein=False):
-    '''
-    Function for opening `.fasta` files. Files can contain multiple sequences.
-    Returns list of sequence objects.
-    '''
+    '''Function for opening `.fasta` files. Files can contain multiple sequences.
+    Returns list of sequence objects.'''
     sequences = []
     seq_id = ''
     sequence = ''
@@ -37,16 +33,9 @@ def open_fasta(file_input_paths, protein=False):
     return sequences
 
 
-def write_fasta(solution_list, path=None):
-    """
-    Simple function for writing `.fasta` files.
-    """
-    if path:
-        with open(path, 'w') as file_out:
-            for sequence in solution_list:
-                if sequence:
-                    file_out.write(f'\n{sequence}\n')
-    else:
-        for sequence in solution_list:
+def write_fasta(sequence_list, path=''):
+    '''Simple function for writing `.fasta` files.'''
+    with open(f'{path}output.fasta', 'w') as file_out:
+        for sequence in sequence_list:
             if sequence:
-                sys.stdout.write(f'\n{sequence}\n')
+                file_out.write(sequence.fasta)

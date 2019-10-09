@@ -34,6 +34,7 @@ setup(
     package_data={
         'seqtools': [
             'data/*.csv',
+            'data/*.spsum',
         ]
     },
     install_requires=['pandas', 'pyperclip'],
