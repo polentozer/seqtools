@@ -134,7 +134,10 @@ def load_codon_table(species=None, taxonomy_id=None, custom=False):
         for header in cu:
             codon_counts = cu.readline()
 
-            taxid, species, _ = header.strip().split(':')[:3]
+            taxid, species = header.strip().split(':')[:2]
+
+            if taxonomy_id:
+                taxonomy_id = str(taxonomy_id)
 
             if taxonomy_id and taxonomy_id != taxid:
                 continue
@@ -484,14 +487,34 @@ class Nucleotide(Sequence):
 
     def make_part(self, part_type='3t', part_options=GGA_PART_TYPES):
         '''Make DNA part out of a given sequence'''
+        logger.debug('Making parts...')
         seq_id = f'part_gge{part_type}_{self.sequence_id}'
         part = part_options[f'type{part_type}']
-        if part_type in ('3t', '3a', '3b'):
+        if part_type in ('3t', '3a', '3b') and self.translate(check=True).sequence[-1] == '*':
             sequence = f'{part["prefix"]}{self.sequence[:-3]}{part["suffix"]}'
         else:
             sequence = f'{part["prefix"]}{self.sequence}{part["suffix"]}'
 
         return Nucleotide(seq_id, sequence)
+    
+    def optimize_special(self, table_source, table=default_table):
+        '''Optimize codon usage of a given DNA sequence'''
+        if not self.basic_cds:
+            self = bool_user_prompt(self, 'Special optimize')
+            if 'FORCED' not in self.sequence_id:
+                return self
+        
+        seq_id = self.sequence_id
+        optimized = list()
+
+        for amino in self.translate(table=table):
+            if amino == '?':
+                optimized.append('NNN')
+            else:
+                codons = table.loc[amino]
+                source_codons = table_source.loc[amino]
+        
+        pass
 
 
 class Enzyme:
@@ -684,9 +707,75 @@ if __name__ == '__main__':
 
     print(re_list)
 
+
+
     # print(test_dna2)
     # for _ in range(10):
     #     print(test_dna2.optimize_codon_usage(maximum=False).remove_cutsites(re_list))
     # print(test_dna2.remove_cutsites(re_list))
 
     print(test_dna2.optimize_codon_usage(maximum=False).remove_cutsites(re_list).make_part('3t').fasta)
+
+    print()
+    print()
+    # l1 = [1, 2, 3, 4]
+    # l2 = [2, 4, 6, 8]
+
+    # x = list(map(lambda x: x*2, (l1, l2)))
+
+    # print(x)
+
+    # Salvia officinalis: 38868 table
+    s_table = load_codon_table(taxonomy_id=38868)
+
+    # print(new_table)
+    # print(s_table)
+
+    amino = 'V'
+    src = 'GTA'
+    codons = new_table.loc[amino]
+    scodons = s_table.loc[amino]
+
+    print(codons)
+    print(scodons)
+
+    print()
+
+    for x, y in codons['Fraction'].items():
+        print(x, y)
+
+    print()
+
+    sorted_codons = sorted(codons['Fraction'])
+    sorted_scodons = sorted(scodons['Fraction'])
+
+    scodon_occ = scodons.loc[src]['Fraction']
+    
+    maped = map(lambda x, y: [x, y], sorted_codons, sorted_scodons)
+
+    # for x in maped:
+    #     print(x)
+    print(list(maped))
+    print(scodon_occ)
+
+    print(sorted_codons)
+    print(sorted_scodons)
+    # print(sorted_codons[-1])
+    # print(codons[codons['Fraction'] == sorted_codons[-1]])
+
+    a = []
+    b = ['x']
+
+    if a:
+        print('[] == True')
+    if not a:
+        print('[] == False')
+    if b:
+        print('["x"] == True')
+    if not b:
+        print('["x"] == False')
+    if not c:
+        print("Not defined == False")
+    if c:
+        print("Not defined == True")
+

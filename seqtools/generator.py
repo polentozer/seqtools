@@ -39,27 +39,37 @@ def generate_dna(length, homopolymer=10, gc_stretch=20, restriction=False, ratio
         restriction:    -e {restriction}
         gc_ratio:       -r {ratio_gc}'''
 
+    
+    logger.debug(f'generate_dna({length}, homopolymer={homopolymer}, gc_stretch={gc_stretch}, restriction={restriction}, ratio_gc={ratio_gc}, protein={protein})')
+
     def generator(length, chars=dna):
         return ''.join(choice(chars) for _ in range(length))
 
     def check_restriction(sequence, restriction_set=restriction_enzymes):
+        logger.debug('Checking for restriction sequences')
         for restriction_site in restriction_set:
             if restriction_site in sequence:
+                logger.debug(f'Detected restriction sequence {restriction_site}')
                 return True
         return False
 
     def check_homopolymer(sequence, upper_bound, chars=dna):
         for char in chars:
+            logger.debug(f'Checking for {char} homopolymers...')
             if char * upper_bound in sequence:
+                logger.debug(f'{char} homopolymer detected')
                 return True
         return False
 
     def check_gc_cont(sequence, upper_bound, lower_bound):
+        logger.debug('Checking GC content...')
         if not upper_bound > sum(map(sequence.count, ('G', 'C'))) / len(sequence) > lower_bound:
+            logger.debug(f'GC content exceedes given limits: {upper_bound}% and {lower_bound}%')
             return True
         return False
 
     def check_gc_stretch(sequence, upper_bound):
+        logger.debug('Checking GC and AT streches...')
         longest, at, gc = 0, 0, 0
         for char in sequence:
             if char in 'GC':
@@ -73,6 +83,7 @@ def generate_dna(length, homopolymer=10, gc_stretch=20, restriction=False, ratio
                 longest = at
                 at = 0
         if longest >= upper_bound:
+            logger.debug(f'GC/AT stretch exceedes given limit: {upper_bound}')
             return True
         return False
 
@@ -94,8 +105,7 @@ def generate_dna(length, homopolymer=10, gc_stretch=20, restriction=False, ratio
         if protein:
             seq = Protein('generated', f'M{generator(length-1, chars=prot)}*')
         else:
-            candidates = []
-            confirmed = []
+            candidates, confirmed = [], []
             if length < 100:
                 candidates.append(generator(length))
             else:
@@ -114,7 +124,7 @@ def generate_dna(length, homopolymer=10, gc_stretch=20, restriction=False, ratio
 
             seq = Nucleotide('Generated DNA', ''.join(confirmed))
 
-        logger.info(f'Generated sequence: {seq.sequence}')
+        logger.info(f'Generated sequence:\n>generated\n{seq.sequence}\n')
         sys.stdout.write(seq.sequence)
         pyperclip.copy(seq.sequence)
         logger.info('Sequence copied to clipboard')

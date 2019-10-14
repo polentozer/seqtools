@@ -31,20 +31,21 @@ Help:
 import os
 import sys
 import pandas
-import logging
 import argparse
+import logging
 import logging.config
 from . import __version__ as VERSION
-from seqtools.util import load_codon_table
-from seqtools.generator import generate_dna
-from seqtools.fasta import open_fasta, write_fasta
-from seqtools.modules import Nucleotide, Protein, Restriction_Enzyme
 from seqtools.seqtools_config import LOGGING_CONFIG, RESTRICTION_ENZYMES
 
 ### LOGGER ###
 logging.config.dictConfig(LOGGING_CONFIG)
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+
+from seqtools.util import load_codon_table
+from seqtools.generator import generate_dna
+from seqtools.fasta import open_fasta, write_fasta
+from seqtools.modules import Nucleotide, Protein, Restriction_Enzyme
+
 
 def cli_argparser():
     '''Argument parser for seqtools.'''
@@ -71,10 +72,10 @@ def cli_argparser():
         'length', action='store', type=int,
         help='How long should generated DNA be')
     generate_parser.add_argument(
-        '-n', '--homopolymer', action='store', default=4, required=False, type=int,
+        '-n', '--homopolymer', action='store', default=10, required=False, type=int,
         help='Number of allowed single nucleotide repeats')
     generate_parser.add_argument(
-        '-g', '--gc_streach', action='store', default=6, required=False, type=int,
+        '-g', '--gc_streatch', action='store', default=20, required=False, type=int,
         help=' Maximum allowed GC/AT stretch')
     generate_parser.add_argument(
         '-e', '--restriction', action='store_true', default=False, required=False,
@@ -82,6 +83,9 @@ def cli_argparser():
     generate_parser.add_argument(
         '-r', '--ratio_gc', action='store_true', default=True, required=False,
         help='Do not limit the GC content between 0.4 and 0.6')
+    generate_parser.add_argument(
+        '-P', '--protein', action='store_true', default=False, required=False,
+        help='Use this flag to generate a random protein sequence of chosen length')
 
     # ==================
     # analyze sequence
@@ -120,9 +124,13 @@ def cli_argparser():
     # transform options
     # ------------------
     table_input = transform.add_mutually_exclusive_group()
-    transform.add_argument(
+    maniputaion = transform.add_mutually_exclusive_group()
+    maniputaion.add_argument(
         '-O', '--optimize', action='store_true', default=False,
         help='Use this flag to change output to optimized DNA sequences')
+    maniputaion.add_argument(
+        '-T', '--translate', action='store_true', default=False,
+        help='Use this flag to change output to proteins translated from given DNAs')
     transform.add_argument(
         '-f', '--input_file', type=str, nargs='+', required=False,
         help='Path to input .fasta files')
@@ -159,32 +167,23 @@ def cli_argparser():
 
 def main():
     '''Main CLI entrypoint'''
-
     args = cli_argparser()
-
-    if args.type or args.remove_cutsites:
-        logger.debug('Generating RENZYME_LIST')
-        renzyme_list = []
-        for renzyme in RESTRICTION_ENZYMES.keys():
-            renzyme_list.append(
-                Restriction_Enzyme(
-                    renzyme,
-                    RESTRICTION_ENZYMES[renzyme]['substrate'],
-                    RESTRICTION_ENZYMES[renzyme]['recognition'],
-                    jump=RESTRICTION_ENZYMES[renzyme]['jump'],
-                    overhang=RESTRICTION_ENZYMES[renzyme]['overhang'],
-                    enzyme_description=RESTRICTION_ENZYMES[renzyme]['description']
-                )
-            )
     
+    # TRANSFORMATIONS
     if args.commands == 'trans':
         logger.debug('SEQTOOLS-TRANSFORM')
+
+        sequences, solution = [], []
+
+        # Codon table input
         if args.organism_name or args.organism_id:
             logger.info(f'Loading codon table: species={args.organism_name} tax_id={args.organism_id}')
             codon_table = load_codon_table(species=args.organism_name, taxonomy_id=args.organism_id)
         else:
             logger.warning('Using default codon table: YALI')
             codon_table = load_codon_table(species='yali')
+
+        # Sequences input
         if args.input_file:
             logger.info('Loading sequences...')
             sequences = open_fasta(args.input_file, protein=args.protein)
@@ -192,24 +191,62 @@ def main():
             if args.protein:
                 sequences = [Protein('[SEQ_ID]', str(args.input))]
                 logger.info('Reverse-translating proteins...')
-                solution = [protein.reverse_translate(table=codon_table, maximum=args.maximum) for protein in sequences]
             else:
                 sequences = [Nucleotide('[SEQ_ID]', str(args.input))]
-                if args.optimize:
-                    logger.info('Optimizing DNA sequences...')
-                    solution = [dna.optimize_codon_usage(table=codon_table, maximum=args.maximum) for dna in sequences]
+
+        # Protein reverse translation
+        if args.protein and sequences:
+            solution = [protein.reverse_translate(table=codon_table, maximum=args.maximum) for protein in sequences]
+
+        # DNA sequences
+        elif sequences:
+            # Optimization
+            if args.optimize:
+                logger.info('Optimizing DNA sequences...')
+                solution = [dna.optimize_codon_usage(table=codon_table, maximum=args.maximum) for dna in sequences]
+            # Translation
+            elif args.translate:
+                logger.info('Translating DNA sequences...')
+                solution = [dna.translate(table=codon_table) for dna in sequences]
+            
+            # Restriction enzyme recognition sites removal
+            if args.remove_cutsites:
+                logger.debug('Generating RENZYME_LIST')
+
+                # Restriction enzyme parser for RESTRICTION_ENZYME dictionary (found in seqtools_config.py)
+                renzyme_list = []
+                for renzyme in RESTRICTION_ENZYMES.keys():
+                    renzyme_list.append(
+                        Restriction_Enzyme(
+                            renzyme,
+                            RESTRICTION_ENZYMES[renzyme]['substrate'],
+                            RESTRICTION_ENZYMES[renzyme]['recognition'],
+                            jump=RESTRICTION_ENZYMES[renzyme]['jump'],
+                            overhang=RESTRICTION_ENZYMES[renzyme]['overhang'],
+                            enzyme_description=RESTRICTION_ENZYMES[renzyme]['description']))
+
+                if solution:
+                    target = solution
                 else:
-                    logger.info('Translating DNA sequences...')
-                    solution = [dna.translate(table=codon_table) for dna in sequences]
-                if args.type:
-                    if args.type in ('1', '2', '3', '3a', '3b', '3t', '4', '4a', '4b', '5', '6', '7', '8', '8a', '8b'):
-                        logger.info(f'Changing sequences to type{args.type} parts')
-                        solution = [dna.remove_cutsites(renzyme_list, table=codon_table).make_part(part_type=args.type) for dna in solution]
+                    target = sequences
+                logger.info('Removing cutsites from DNA sequences...')
+                solution = [dna.remove_cutsites(renzyme_list, table=codon_table) for dna in target]
+
+            # Appending prefixes and suffixes for GGE parts
+            if args.type:
+                if args.type in ('1', '2', '3', '3a', '3b', '3t', '4', '4a', '4b', '5', '6', '7', '8', '8a', '8b'):
+                    if solution:
+                        target = solution
                     else:
-                        logger.warning(f'Part type{args.type} does not exist; skipping transformation into parts')
-                elif args.remove_cutsites:
-                    logger.info('Removing cutsites from DNA sequences...')
-                    solution = [dna.remove_cutsites(renzyme_list, table=codon_table) for dna in solution]
+                        target = sequences
+                    logger.info(f'Changing sequences to type{args.type} parts')
+                    solution = [dna.make_part(part_type=args.type) for dna in target]
+                else:
+                    logger.warning(f'Part type{args.type} does not exist; skipping transformation into parts')
+
+        # No sequences
+        else:
+            logger.error('Fasta file is empty or no sequence provided...')
 
         # saving/printing solutions
         if args.output:
@@ -221,24 +258,31 @@ def main():
                 sys.stdout.write(f'\n{sequence.fasta}\n')
         logger.info('DONE')
 
+    # GENERATOR
     elif args.commands == 'gen':
         logger.debug('SEQTOOLS-GENERATOR')
         generate_dna(
             args.length,
-            args.homopolymer,
-            args.gc_streach,
-            args.restriction,
-            args.ratio_gc
+            homopolymer=args.homopolymer,
+            gc_stretch=args.gc_streatch,
+            restriction=args.restriction,
+            ratio_gc=args.ratio_gc,
+            protein=args.protein
         )
         logger.info('DONE')
 
+    # ANALYZER
     elif args.commands == 'anal':
         logger.debug('SEQTOOLS-ANALYZER')
         sequences = open_fasta(args.input_file, protein=args.protein)
         logging.info('K-MER analysis')
-        for seq in sequences:
-            logging.info(f'{seq.kmer_occurrence(threshold=args.threshold, length=args.kmer)}')
+        if sequences:
+            for seq in sequences:
+                logging.info(f'{seq.kmer_analysis(threshold=args.threshold, length=args.kmer)}')
+        else:
+            logger.error('Fasta file is empty or no sequence provided...')
         logger.info('DONE')
 
+    # NO ARGUMENTS
     else:
-        logging.warning('No arguments were given. DONE')
+        logging.warning('No arguments given.\nDONE')

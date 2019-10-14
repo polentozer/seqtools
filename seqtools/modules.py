@@ -32,7 +32,7 @@ class Sequence:
     def fasta(self):
         return f'>{self.sequence_id}\n{self.sequence}\n'
 
-    def kmer_occurrence(self, threshold, length=8):
+    def kmer_analysis(self, threshold, length=8):
         self.logger.debug('Calculating k-mer occurrence...')
         kmers = {}
         for i in range(len(self) - length + 1):
@@ -106,7 +106,7 @@ class Nucleotide(Sequence):
 
     @sequence.setter
     def sequence(self, string):
-        allowed_characters = re.compile(r'[^ACTGNU]')
+        allowed_characters = re.compile(r'[^ACTGNUSW]')
         if not sequence_match(string, allowed_characters.search):
             self.logger.error('Nucleotide sequence includes unallowed character(s)')
             raise ValueError
@@ -158,6 +158,22 @@ class Nucleotide(Sequence):
         '''Makes list of chunks 3 characters long from a sequence'''
         self.logger.debug('Making triplets...')
         return [self.sequence[start:start + 3] for start in range(0, len(self.sequence), 3)]
+
+    def melting_temperature(self):
+        '''Calculate and return the Tm using the "Wallace rule".
+
+        Tm = 4°C * (G+C) + 2°C * (A+T)
+
+        The Wallace rule (Thein & Wallace 1986, in Human genetic diseases: a
+        practical approach, 33-50) is often used as rule of thumb for approximate
+        Tm calculations for primers of 14 to 20 nt length.
+
+        Non-dNA characters (e.g. E, F, J, !, 1, etc) are ignored in this method.
+        '''
+        self.logger.debug('Calculating melting temperature...')
+        weak = ('A', 'T', 'W')
+        strong = ('C', 'G', 'S')
+        return 2*sum(map(self.sequence.count, weak)) + 4*sum(map(self.sequence.count, strong))
 
     def translate(self, table=DEFAULT_TABLE, check=False):
         '''Translate DNA sequence in PROTEIN sequence'''
@@ -268,7 +284,7 @@ class Nucleotide(Sequence):
         self.logger.debug('Making parts...')
         seq_id = f'part_gge{part_type}_{self.sequence_id}'
         part = part_options[f'type{part_type}']
-        if part_type in ('3t', '3a', '3b'):
+        if part_type in ('3t', '3a', '3b') and self.translate(check=True).sequence[-1] == '*':
             sequence = f'{part["prefix"]}{self.sequence[:-3]}{part["suffix"]}'
         else:
             sequence = f'{part["prefix"]}{self.sequence}{part["suffix"]}'
