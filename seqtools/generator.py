@@ -120,14 +120,15 @@ def generate_dna(length, homopolymer=10, gc_stretch=20, restriction=False, ratio
                     candidates.pop(0)
                 else:
                     confirmed.append(candidates[0])
-                    candidates.pop(0)    
+                    candidates.pop(0)
 
             seq = Nucleotide('Generated DNA', ''.join(confirmed))
 
-        logger.info(f'Generated sequence:\n>generated\n{seq.sequence}\n')
+        logger.warning(f'Generated sequence:\n>generated\n{seq.sequence}\n')
         sys.stdout.write(seq.sequence)
         pyperclip.copy(seq.sequence)
-        logger.info('Sequence copied to clipboard')
+        logger.warning('Sequence copied to clipboard')
+
         return seq
 
     except TimeoutError:

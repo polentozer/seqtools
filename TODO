@@ -1,9 +1,9 @@
 OPTIMIZATION
--[ ] detect restriction sites (type2)
-    -[ ] remove restriction sites (type2)
+-[x] detect restriction sites (type2)
+    -[x] remove restriction sites (type2)
 -[o] default genetic code tables (at least standard one)
     -[x] the "sample-one"
-    -[ ] actual genetic code tables
+    -[x] actual genetic code tables
 -[x] analyzing dna sequence optimization (from 0-100%)
     -[ ] different optimization stages (from 0-100%)
 -[ ] optimizing GC content
@@ -17,6 +17,7 @@ ANALYZIS
 -[x] kmer analysis
 
 OTHER
+-[ ] write better manual
 -[ ] genbank (gb) input files
 -[ ] extend reverse translation to incorporate extended DNA symbols
 -[ ] detecting protein/dna sequences if no -p flag is given

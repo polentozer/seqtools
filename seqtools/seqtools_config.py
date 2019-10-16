@@ -1,3 +1,4 @@
+#cSpell: Disable#
 GGA_PART_TYPES = {
     'type1': {
         'prefix': 'GCATCGTCTCATCGGAGTCGGTCTCACCCT',
@@ -87,28 +88,70 @@ RESTRICTION_ENZYMES = {
         'recognition': 'GGTCTC',
         'jump': 1,
         'overhang': 4,
-        'description': 'Type 2 restriction enzyme used in modular cloning or MoClo for short'
+        'incubation_temperature': 37,
+        'overhang_type': '5`',
+        'methylation_sensitivity': {
+            'Dam': False,
+            'Dcm': True,
+            'EcoKI': False
+        },
+        'description': 'Type 2 restriction enzyme used in modular cloning or MoClo for short. Sticky ends from different BsaI sites may not be compatible. BsaI can be used between 37 and 50 °C.'
     },
     'BsmBI': {
         'substrate': 'DNA',
         'recognition': 'CGTCTC',
         'jump': 1,
         'overhang': 4,
-        'description': 'Type 2 restriction enzyme used in modular cloning or MoClo for short'
+        'incubation_temperature': 55,
+        'overhang_type': '5`',
+        'methylation_sensitivity': {
+            'Dam': False,
+            'Dcm': False,
+            'EcoKI': False
+        },
+        'description': 'Type 2 restriction enzyme used in modular cloning or MoClo for short. Sticky ends from different BsmBI sites may not be compatible.'
+    },
+    'NotI': {
+        'substrate': 'DNA',
+        'recognition': 'GCGGCCGC',
+        'jump': 0,
+        'overhang': 4,
+        'incubation_temperature': 37,
+        'overhang_type': '5`',
+        'methylation_sensitivity': {
+            'Dam': False,
+            'Dcm': False,
+            'EcoKI': False
+        },
+        'description': 'Classic restriction enzyme commonly used in cloning. This particular enzyme has has very rare recognition site.'
     },
     'BpiI': {
         'substrate': 'DNA',
         'recognition': 'GAAGAC',
         'jump': 2,
         'overhang': 4,
-        'description': 'Type 2 restriction enzyme used in modular cloning or MoClo for short'
+        'incubation_temperature': 37,
+        'overhang_type': '5`',
+        'methylation_sensitivity': {
+            'Dam': False,
+            'Dcm': False,
+            'EcoKI': False
+        },
+        'description': 'Type 2 restriction enzyme used in modular cloning or MoClo for short. Sticky ends from different BsmBI sites may not be compatible.'
     },
     'EcoRI': {
         'substrate': 'DNA',
         'recognition': 'GAATTC',
         'jump': 0,
         'overhang': 4,
-        'description': 'Classic restriction enzyme commonly used in cloning'
+        'incubation_temperature': 37,
+        'overhang_type': '5`',
+        'methylation_sensitivity': {
+            'Dam': False,
+            'Dcm': False,
+            'EcoKI': False
+        },
+        'description': 'Classic restriction enzyme commonly used in cloning.'
     }
 }
 
