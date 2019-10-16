@@ -637,3 +637,297 @@ remove_cutsites made 6 changes in idi1|OPT|REC sequence
 2019-10-14 17:43:51,060 test.py __main__ WARNING GAA --> GAG
 2019-10-14 17:43:51,060 test.py __main__ INFO remove_cutsites made 4 changes in idi1|OPT|REC sequence
 2019-10-14 17:43:51,060 test.py __main__ DEBUG Making parts...
+2019-10-15 16:37:51,322 test.py __main__ WARNING BsaI cuts (GGTCTC)
+2019-10-15 16:37:51,332 test.py __main__ WARNING GTC --> GTG
+2019-10-15 16:37:51,333 test.py __main__ WARNING BsaI cuts (GAGACC)
+2019-10-15 16:37:51,338 test.py __main__ WARNING GAG --> GAA
+2019-10-15 16:37:51,338 test.py __main__ WARNING BpiI cuts (GTCTTC)
+2019-10-15 16:37:51,342 test.py __main__ WARNING GTC --> GTT
+2019-10-15 16:37:51,343 test.py __main__ WARNING EcoRI cuts (GAATTC)
+2019-10-15 16:37:51,348 test.py __main__ WARNING CGA --> CGC
+2019-10-15 16:37:51,348 test.py __main__ INFO remove_cutsites made 4 changes in idi1|OPT|REC sequence
+2019-10-15 16:37:51,348 test.py __main__ DEBUG Making parts...
+2019-10-15 16:38:11,774 test.py __main__ WARNING BsaI cuts (GAGACC)
+2019-10-15 16:38:11,779 test.py __main__ WARNING CAG --> CAA
+2019-10-15 16:38:11,779 test.py __main__ WARNING BsaI cuts (GAGACC)
+2019-10-15 16:38:11,782 test.py __main__ WARNING GAG --> GAA
+2019-10-15 16:38:11,782 test.py __main__ WARNING BpiI cuts (GAAGAC)
+2019-10-15 16:38:11,786 test.py __main__ WARNING CTG --> CTC
+2019-10-15 16:38:11,786 test.py __main__ INFO remove_cutsites made 3 changes in idi1|OPT|REC sequence
+2019-10-15 16:38:11,786 test.py __main__ DEBUG Making parts...
+2019-10-15 16:41:53,003 test.py __main__ WARNING BsaI cuts (GAGACC)
+2019-10-15 16:41:53,010 test.py __main__ WARNING GAG --> GAA
+2019-10-15 16:41:53,010 test.py __main__ WARNING BsaI cuts (GAGACC)
+2019-10-15 16:41:53,015 test.py __main__ WARNING GAG --> GAA
+2019-10-15 16:41:53,016 test.py __main__ WARNING EcoRI cuts (GAATTC)
+2019-10-15 16:41:53,022 test.py __main__ WARNING CGA --> CGC
+2019-10-15 16:41:53,023 test.py __main__ INFO remove_cutsites made 3 changes in idi1|OPT|REC sequence
+2019-10-15 16:41:53,023 test.py __main__ DEBUG Making parts...
+2019-10-15 16:45:24,158 test.py __main__ WARNING BsaI cuts (GGTCTC)
+2019-10-15 16:45:24,167 test.py __main__ WARNING GTC --> GTG
+2019-10-15 16:45:24,167 test.py __main__ WARNING BsaI cuts (GAGACC)
+2019-10-15 16:45:24,174 test.py __main__ WARNING GAG --> GAA
+2019-10-15 16:45:24,174 test.py __main__ INFO remove_cutsites made 2 changes in idi1|OPT|REC sequence
+2019-10-15 16:45:24,174 test.py __main__ DEBUG Making parts...
+2019-10-15 16:46:18,139 test.py __main__ WARNING BsaI cuts (GGTCTC)
+2019-10-15 16:46:18,147 test.py __main__ WARNING GGT --> GGA
+2019-10-15 16:46:18,147 test.py __main__ WARNING BsaI cuts (GAGACC)
+2019-10-15 16:46:18,153 test.py __main__ WARNING GAG --> GAA
+2019-10-15 16:46:18,153 test.py __main__ WARNING BsaI cuts (GAGACC)
+2019-10-15 16:46:18,161 test.py __main__ WARNING GAG --> GAA
+2019-10-15 16:46:18,161 test.py __main__ WARNING BpiI cuts (GAAGAC)
+2019-10-15 16:46:18,167 test.py __main__ WARNING GAA --> GAG
+2019-10-15 16:46:18,167 test.py __main__ WARNING BpiI cuts (GAAGAC)
+2019-10-15 16:46:18,174 test.py __main__ WARNING CTG --> CTC
+2019-10-15 16:46:18,174 test.py __main__ WARNING BpiI cuts (GTCTTC)
+2019-10-15 16:46:18,181 test.py __main__ WARNING CGG --> CGA
+2019-10-15 16:46:18,181 test.py __main__ INFO remove_cutsites made 6 changes in idi1|OPT|REC sequence
+2019-10-15 16:46:18,182 test.py __main__ DEBUG Making parts...
+2019-10-15 16:48:49,115 test.py __main__ WARNING BsaI cuts (GGTCTC)
+2019-10-15 16:48:49,120 test.py __main__ WARNING GTC --> GTG
+2019-10-15 16:48:49,120 test.py __main__ WARNING BpiI cuts (GAAGAC)
+2019-10-15 16:48:49,124 test.py __main__ WARNING GAA --> GAG
+2019-10-15 16:48:49,124 test.py __main__ INFO remove_cutsites made 2 changes in idi1|OPT|REC sequence
+2019-10-15 16:48:49,125 test.py __main__ DEBUG Making parts...
+2019-10-15 16:49:57,555 test.py __main__ INFO remove_cutsites made 0 changes in idi1|OPT sequence
+2019-10-15 16:49:57,555 test.py __main__ DEBUG Making parts...
+2019-10-15 16:50:30,426 test.py __main__ WARNING BsaI cuts (GAGACC)
+2019-10-15 16:50:30,431 test.py __main__ WARNING GAG --> GAA
+2019-10-15 16:50:30,431 test.py __main__ WARNING BsaI cuts (GAGACC)
+2019-10-15 16:50:30,437 test.py __main__ WARNING GAG --> GAA
+2019-10-15 16:50:30,437 test.py __main__ WARNING BsmBI cuts (GAGACG)
+2019-10-15 16:50:30,443 test.py __main__ WARNING GAG --> GAA
+2019-10-15 16:50:30,444 test.py __main__ WARNING BpiI cuts (GAAGAC)
+2019-10-15 16:50:30,450 test.py __main__ WARNING ACG --> ACA
+2019-10-15 16:50:30,451 test.py __main__ INFO remove_cutsites made 4 changes in idi1|OPT|REC sequence
+2019-10-15 16:50:30,451 test.py __main__ DEBUG Making parts...
+2019-10-15 16:51:34,282 test.py __main__ WARNING BsaI cuts (GAGACC)
+2019-10-15 16:51:34,289 test.py __main__ WARNING GAG --> GAA
+2019-10-15 16:51:34,289 test.py __main__ WARNING BpiI cuts (GAAGAC)
+2019-10-15 16:51:34,296 test.py __main__ WARNING GAA --> GAG
+2019-10-15 16:51:34,296 test.py __main__ WARNING BpiI cuts (GAAGAC)
+2019-10-15 16:51:34,301 test.py __main__ WARNING CTG --> CTT
+2019-10-15 16:51:34,302 test.py __main__ INFO remove_cutsites made 3 changes in idi1|OPT|REC sequence
+2019-10-15 16:51:34,302 test.py __main__ DEBUG Making parts...
+2019-10-15 16:57:16,255 test.py __main__ WARNING BsaI cuts (GAGACC)
+2019-10-15 16:57:16,263 test.py __main__ WARNING GAG --> GAA
+2019-10-15 16:57:16,263 test.py __main__ WARNING BsmBI cuts (CGTCTC)
+2019-10-15 16:57:16,268 test.py __main__ WARNING GCC --> GCT
+2019-10-15 16:57:16,268 test.py __main__ WARNING BpiI cuts (GTCTTC)
+2019-10-15 16:57:16,275 test.py __main__ WARNING GTC --> GTT
+2019-10-15 16:57:16,275 test.py __main__ INFO remove_cutsites made 3 changes in idi1|OPT|REC sequence
+2019-10-15 16:57:16,275 test.py __main__ DEBUG Making parts...
+2019-10-15 16:59:27,050 test.py __main__ WARNING BsaI cuts (GAGACC)
+2019-10-15 16:59:27,055 test.py __main__ WARNING GAG --> GAA
+2019-10-15 16:59:27,055 test.py __main__ WARNING BsmBI cuts (CGTCTC)
+2019-10-15 16:59:27,061 test.py __main__ WARNING GCC --> GCT
+2019-10-15 16:59:27,061 test.py __main__ WARNING BpiI cuts (GAAGAC)
+2019-10-15 16:59:27,069 test.py __main__ WARNING GAA --> GAG
+2019-10-15 16:59:27,069 test.py __main__ WARNING EcoRI cuts (GAATTC)
+2019-10-15 16:59:27,075 test.py __main__ WARNING GAA --> GAG
+2019-10-15 16:59:27,075 test.py __main__ WARNING EcoRI cuts (GAATTC)
+2019-10-15 16:59:27,081 test.py __main__ WARNING AGA --> CGT
+2019-10-15 16:59:27,081 test.py __main__ INFO remove_cutsites made 5 changes in idi1|OPT|REC sequence
+2019-10-15 16:59:27,081 test.py __main__ DEBUG Making parts...
+2019-10-15 17:00:19,936 test.py __main__ WARNING BsmBI cuts (GAGACG)
+2019-10-15 17:00:19,945 test.py __main__ WARNING GAG --> GAA
+2019-10-15 17:00:19,946 test.py __main__ WARNING BpiI cuts (GAAGAC)
+2019-10-15 17:00:19,953 test.py __main__ WARNING ACG --> ACC
+2019-10-15 17:00:19,953 test.py __main__ INFO remove_cutsites made 2 changes in idi1|OPT|REC sequence
+2019-10-15 17:00:19,954 test.py __main__ DEBUG Making parts...
+2019-10-15 17:00:27,303 test.py __main__ WARNING BpiI cuts (GAAGAC)
+2019-10-15 17:00:27,308 test.py __main__ WARNING CTG --> CTT
+2019-10-15 17:00:27,309 test.py __main__ WARNING BpiI cuts (GTCTTC)
+2019-10-15 17:00:27,319 test.py __main__ WARNING GTC --> GTG
+2019-10-15 17:00:27,319 test.py __main__ INFO remove_cutsites made 2 changes in idi1|OPT|REC sequence
+2019-10-15 17:00:27,319 test.py __main__ DEBUG Making parts...
+2019-10-15 17:00:37,748 test.py __main__ WARNING BsaI cuts (GAGACC)
+2019-10-15 17:00:37,753 test.py __main__ WARNING GAG --> GAA
+2019-10-15 17:00:37,754 test.py __main__ WARNING BpiI cuts (GAAGAC)
+2019-10-15 17:00:37,761 test.py __main__ WARNING CTG --> CTC
+2019-10-15 17:00:37,761 test.py __main__ INFO remove_cutsites made 2 changes in idi1|OPT|REC sequence
+2019-10-15 17:00:37,761 test.py __main__ DEBUG Making parts...
+2019-10-15 17:03:16,163 test.py __main__ WARNING BsmBI cuts (CGTCTC)
+2019-10-15 17:03:16,170 test.py __main__ WARNING GCC --> GCT
+2019-10-15 17:03:16,170 test.py __main__ WARNING BsmBI cuts (GAGACG)
+2019-10-15 17:03:16,176 test.py __main__ WARNING GAG --> GAA
+2019-10-15 17:03:16,176 test.py __main__ WARNING BsmBI cuts (GAGACG)
+2019-10-15 17:03:16,184 test.py __main__ WARNING GAG --> GAA
+2019-10-15 17:03:16,184 test.py __main__ WARNING BpiI cuts (GAAGAC)
+2019-10-15 17:03:16,190 test.py __main__ WARNING GAA --> GAG
+2019-10-15 17:03:16,190 test.py __main__ WARNING BpiI cuts (GAAGAC)
+2019-10-15 17:03:16,196 test.py __main__ WARNING ACG --> ACC
+2019-10-15 17:03:16,196 test.py __main__ WARNING BpiI cuts (GAAGAC)
+2019-10-15 17:03:16,202 test.py __main__ WARNING CTG --> CTT
+2019-10-15 17:03:16,202 test.py __main__ INFO remove_cutsites made 6 changes in idi1|OPT|REC sequence
+2019-10-15 17:03:16,202 test.py __main__ DEBUG Making parts...
+2019-10-15 17:03:26,521 test.py __main__ WARNING BsaI cuts (GAGACC)
+2019-10-15 17:03:26,528 test.py __main__ WARNING GAG --> GAA
+2019-10-15 17:03:26,529 test.py __main__ WARNING BpiI cuts (GAAGAC)
+2019-10-15 17:03:26,536 test.py __main__ WARNING CTG --> CTC
+2019-10-15 17:03:26,536 test.py __main__ INFO remove_cutsites made 2 changes in idi1|OPT|REC sequence
+2019-10-15 17:03:26,536 test.py __main__ DEBUG Making parts...
+2019-10-15 17:14:29,074 test.py __main__ WARNING BsaI cuts (GGTCTC)
+2019-10-15 17:14:29,082 test.py __main__ WARNING GGT --> GGC
+2019-10-15 17:14:29,087 test.py __main__ WARNING BsaI cuts (GGTCTC)
+2019-10-15 17:14:29,094 test.py __main__ WARNING GGT --> GGC
+2019-10-15 17:14:29,095 test.py __main__ WARNING BsaI cuts (GAGACC)
+2019-10-15 17:14:29,104 test.py __main__ WARNING GAG --> GAA
+2019-10-15 17:14:29,104 test.py __main__ WARNING BpiI cuts (GAAGAC)
+2019-10-15 17:14:29,110 test.py __main__ WARNING CTG --> CTA
+2019-10-15 17:14:29,110 test.py __main__ INFO remove_cutsites made 4 changes in idi1|OPT|REC sequence
+2019-10-15 17:14:29,111 test.py __main__ DEBUG Making parts...
+2019-10-15 17:14:41,474 test.py __main__ WARNING BsaI cuts (GAGACC)
+2019-10-15 17:14:41,479 test.py __main__ WARNING CAG --> CAA
+2019-10-15 17:14:41,479 test.py __main__ WARNING BsaI cuts (GAGACC)
+2019-10-15 17:14:41,484 test.py __main__ WARNING GAG --> GAA
+2019-10-15 17:14:41,485 test.py __main__ WARNING BsaI cuts (GAGACC)
+2019-10-15 17:14:41,494 test.py __main__ WARNING GAG --> GAA
+2019-10-15 17:14:41,496 test.py __main__ WARNING BpiI cuts (GAAGAC)
+2019-10-15 17:14:41,502 test.py __main__ WARNING GAA --> GAG
+2019-10-15 17:14:41,506 test.py __main__ WARNING BpiI cuts (GAAGAC)
+2019-10-15 17:14:41,513 test.py __main__ WARNING CTG --> CTC
+2019-10-15 17:14:41,514 test.py __main__ INFO remove_cutsites made 5 changes in idi1|OPT|REC sequence
+2019-10-15 17:14:41,514 test.py __main__ DEBUG Making parts...
+2019-10-15 17:15:23,797 test.py __main__ WARNING BsaI cuts (GAGACC)
+2019-10-15 17:15:23,803 test.py __main__ WARNING GAG --> GAA
+2019-10-15 17:15:23,803 test.py __main__ WARNING BsaI cuts (GAGACC)
+2019-10-15 17:15:23,811 test.py __main__ WARNING GAG --> GAA
+2019-10-15 17:15:23,812 test.py __main__ WARNING BpiI cuts (GAAGAC)
+2019-10-15 17:15:23,820 test.py __main__ WARNING GAA --> GAG
+2019-10-15 17:15:23,820 test.py __main__ WARNING BpiI cuts (GAAGAC)
+2019-10-15 17:15:23,828 test.py __main__ WARNING CTG --> CTC
+2019-10-15 17:15:23,828 test.py __main__ WARNING EcoRI cuts (GAATTC)
+2019-10-15 17:15:23,833 test.py __main__ WARNING CGA --> AGG
+2019-10-15 17:15:23,834 test.py __main__ INFO remove_cutsites made 5 changes in idi1|OPT|REC sequence
+2019-10-15 17:15:23,834 test.py __main__ DEBUG Making parts...
+2019-10-15 17:16:02,588 test.py __main__ WARNING BsmBI cuts (GAGACG)
+2019-10-15 17:16:02,594 test.py __main__ WARNING GAG --> GAA
+2019-10-15 17:16:02,594 test.py __main__ WARNING BpiI cuts (GAAGAC)
+2019-10-15 17:16:02,600 test.py __main__ WARNING CTG --> TTA
+2019-10-15 17:16:02,600 test.py __main__ INFO remove_cutsites made 2 changes in idi1|OPT|REC sequence
+2019-10-15 17:16:02,600 test.py __main__ DEBUG Making parts...
+2019-10-15 17:16:27,342 test.py __main__ WARNING BsaI cuts (GAGACC)
+2019-10-15 17:16:27,352 test.py __main__ WARNING GAG --> GAA
+2019-10-15 17:16:27,352 test.py __main__ WARNING BpiI cuts (GTCTTC)
+2019-10-15 17:16:27,361 test.py __main__ WARNING CGG --> CGA
+2019-10-15 17:16:27,361 test.py __main__ WARNING EcoRI cuts (GAATTC)
+2019-10-15 17:16:27,367 test.py __main__ WARNING GGA --> GGT
+2019-10-15 17:16:27,367 test.py __main__ INFO remove_cutsites made 3 changes in idi1|OPT|REC sequence
+2019-10-15 17:16:27,367 test.py __main__ DEBUG Making parts...
+2019-10-15 17:16:38,764 test.py __main__ WARNING BsaI cuts (GAGACC)
+2019-10-15 17:16:38,772 test.py __main__ WARNING GAG --> GAA
+2019-10-15 17:16:38,772 test.py __main__ WARNING BsaI cuts (GAGACC)
+2019-10-15 17:16:38,777 test.py __main__ WARNING GAG --> GAA
+2019-10-15 17:16:38,778 test.py __main__ WARNING EcoRI cuts (GAATTC)
+2019-10-15 17:16:38,784 test.py __main__ WARNING GAA --> GAG
+2019-10-15 17:16:38,784 test.py __main__ WARNING EcoRI cuts (GAATTC)
+2019-10-15 17:16:38,790 test.py __main__ WARNING AGA --> CGG
+2019-10-15 17:16:38,791 test.py __main__ INFO remove_cutsites made 4 changes in idi1|OPT|REC sequence
+2019-10-15 17:16:38,791 test.py __main__ DEBUG Making parts...
+2019-10-15 17:16:55,226 test.py __main__ WARNING BsaI cuts (GAGACC)
+2019-10-15 17:16:55,232 test.py __main__ WARNING GAG --> GAA
+2019-10-15 17:16:55,232 test.py __main__ WARNING BpiI cuts (GAAGAC)
+2019-10-15 17:16:55,239 test.py __main__ WARNING GAA --> GAG
+2019-10-15 17:16:55,240 test.py __main__ WARNING BpiI cuts (GAAGAC)
+2019-10-15 17:16:55,245 test.py __main__ WARNING TTG --> CTG
+2019-10-15 17:16:55,245 test.py __main__ WARNING BpiI cuts (GAAGAC)
+2019-10-15 17:16:55,250 test.py __main__ WARNING CTG --> CTT
+2019-10-15 17:16:55,250 test.py __main__ WARNING BpiI cuts (GTCTTC)
+2019-10-15 17:16:55,256 test.py __main__ WARNING CGG --> CGA
+2019-10-15 17:16:55,257 test.py __main__ WARNING EcoRI cuts (GAATTC)
+2019-10-15 17:16:55,263 test.py __main__ WARNING GGA --> GGG
+2019-10-15 17:16:55,263 test.py __main__ WARNING EcoRI cuts (GAATTC)
+2019-10-15 17:16:55,268 test.py __main__ WARNING AGA --> CGG
+2019-10-15 17:16:55,269 test.py __main__ INFO remove_cutsites made 7 changes in idi1|OPT|REC sequence
+2019-10-15 17:16:55,269 test.py __main__ DEBUG Making parts...
+2019-10-15 18:14:59,057 test.py __main__ WARNING BpiI cuts (GAAGAC)
+2019-10-15 18:14:59,064 test.py __main__ WARNING CTG --> TTG
+2019-10-15 18:14:59,064 test.py __main__ WARNING BpiI cuts (GAAGAC)
+2019-10-15 18:14:59,069 test.py __main__ WARNING TTG --> CTT
+2019-10-15 18:14:59,069 test.py __main__ INFO remove_cutsites made 2 changes in idi1|OPT|REC sequence
+2019-10-15 18:14:59,069 test.py __main__ DEBUG Making parts...
+2019-10-15 18:15:18,743 test.py __main__ WARNING BsaI cuts (GAGACC)
+2019-10-15 18:15:18,752 test.py __main__ WARNING GAG --> GAA
+2019-10-15 18:15:18,752 test.py __main__ WARNING BsmBI cuts (CGTCTC)
+2019-10-15 18:15:18,757 test.py __main__ WARNING GCC --> GCA
+2019-10-15 18:15:18,757 test.py __main__ WARNING BpiI cuts (GAAGAC)
+2019-10-15 18:15:18,764 test.py __main__ WARNING GAA --> GAG
+2019-10-15 18:15:18,765 test.py __main__ WARNING BpiI cuts (GAAGAC)
+2019-10-15 18:15:18,770 test.py __main__ WARNING CTG --> TTG
+2019-10-15 18:15:18,770 test.py __main__ WARNING BpiI cuts (GAAGAC)
+2019-10-15 18:15:18,777 test.py __main__ WARNING TTG --> CTC
+2019-10-15 18:15:18,777 test.py __main__ INFO remove_cutsites made 5 changes in idi1|OPT|REC sequence
+2019-10-15 18:15:18,777 test.py __main__ DEBUG Making parts...
+2019-10-15 18:15:35,798 test.py __main__ WARNING BsaI cuts (GGTCTC)
+2019-10-15 18:15:35,805 test.py __main__ WARNING GGT --> GGC
+2019-10-15 18:15:35,806 test.py __main__ INFO remove_cutsites made 1 changes in idi1|OPT|REC sequence
+2019-10-15 18:15:35,806 test.py __main__ DEBUG Making parts...
+2019-10-15 18:20:08,905 test.py __main__ WARNING BsaI cuts (GGTCTC)
+2019-10-15 18:20:08,912 test.py __main__ WARNING GGT --> GGA
+2019-10-15 18:20:08,912 test.py __main__ WARNING BpiI cuts (GAAGAC)
+2019-10-15 18:20:08,919 test.py __main__ WARNING ACG --> ACC
+2019-10-15 18:20:08,920 test.py __main__ WARNING BpiI cuts (GAAGAC)
+2019-10-15 18:20:08,930 test.py __main__ WARNING GAG --> GAA
+2019-10-15 18:20:08,931 test.py __main__ INFO remove_cutsites made 3 changes in idi1|FORCED|OPT|REC sequence
+2019-10-15 18:20:08,931 test.py __main__ DEBUG Making parts...
+2019-10-15 18:21:34,247 test.py __main__ WARNING BsaI cuts (GAGACC)
+2019-10-15 18:21:34,253 test.py __main__ WARNING TGA --> TAG
+2019-10-15 18:21:34,253 test.py __main__ WARNING EcoRI cuts (GAATTC)
+2019-10-15 18:21:34,260 test.py __main__ WARNING TGA --> TAA
+2019-10-15 18:21:34,261 test.py __main__ INFO remove_cutsites made 2 changes in idi1|FORCED|OPT|REC sequence
+2019-10-15 18:21:34,261 test.py __main__ DEBUG Making parts...
+2019-10-15 18:25:02,510 test.py __main__ WARNING BsaI cuts (GAGACC)
+2019-10-15 18:25:02,515 test.py __main__ WARNING CAG --> CAA
+2019-10-15 18:25:02,515 test.py __main__ WARNING BsmBI cuts (CGTCTC)
+2019-10-15 18:25:02,524 test.py __main__ WARNING GCC --> GCT
+2019-10-15 18:25:02,524 test.py __main__ WARNING BsmBI cuts (GAGACG)
+2019-10-15 18:25:02,532 test.py __main__ WARNING GAG --> GAA
+2019-10-15 18:25:02,532 test.py __main__ WARNING BpiI cuts (GTCTTC)
+2019-10-15 18:25:02,536 test.py __main__ WARNING GGT --> GGC
+2019-10-15 18:25:02,536 test.py __main__ WARNING EcoRI cuts (GAATTC)
+2019-10-15 18:25:02,543 test.py __main__ WARNING CGA --> CGG
+2019-10-15 18:25:02,543 test.py __main__ INFO remove_cutsites made 5 changes in idi1|OPT|REC sequence
+2019-10-15 18:25:02,543 test.py __main__ DEBUG Making parts...
+2019-10-15 18:31:41,836 test.py __main__ WARNING BsaI cuts (GGTCTC)
+2019-10-15 18:31:41,846 test.py __main__ WARNING GTC --> GTT
+2019-10-15 18:31:41,846 test.py __main__ WARNING BsaI cuts (GAGACC)
+2019-10-15 18:31:41,851 test.py __main__ WARNING GAG --> GAA
+2019-10-15 18:31:41,851 test.py __main__ WARNING BsmBI cuts (GAGACG)
+2019-10-15 18:31:41,860 test.py __main__ WARNING GAG --> GAA
+2019-10-15 18:31:41,860 test.py __main__ WARNING BsmBI cuts (GAGACG)
+2019-10-15 18:31:41,865 test.py __main__ WARNING GAG --> GAA
+2019-10-15 18:31:41,866 test.py __main__ WARNING BpiI cuts (GAAGAC)
+2019-10-15 18:31:41,870 test.py __main__ WARNING GAA --> GAG
+2019-10-15 18:31:41,871 test.py __main__ WARNING BpiI cuts (GAAGAC)
+2019-10-15 18:31:41,877 test.py __main__ WARNING TTG --> CTG
+2019-10-15 18:31:41,877 test.py __main__ WARNING BpiI cuts (GAAGAC)
+2019-10-15 18:31:41,885 test.py __main__ WARNING CTG --> CTC
+2019-10-15 18:31:41,885 test.py __main__ INFO remove_cutsites made 7 changes in idi1|OPT|REC sequence
+2019-10-15 18:31:41,885 test.py __main__ DEBUG Making parts...
+2019-10-15 18:32:08,494 test.py __main__ WARNING BsaI cuts (GAGACC)
+2019-10-15 18:32:08,501 test.py __main__ WARNING GAG --> GAA
+2019-10-15 18:32:08,501 test.py __main__ WARNING BsaI cuts (GAGACC)
+2019-10-15 18:32:08,508 test.py __main__ WARNING GAG --> GAA
+2019-10-15 18:32:08,508 test.py __main__ WARNING BpiI cuts (GAAGAC)
+2019-10-15 18:32:08,515 test.py __main__ WARNING GAA --> GAG
+2019-10-15 18:32:08,516 test.py __main__ WARNING BpiI cuts (GAAGAC)
+2019-10-15 18:32:08,521 test.py __main__ WARNING CTG --> CTA
+2019-10-15 18:32:08,522 test.py __main__ WARNING EcoRI cuts (GAATTC)
+2019-10-15 18:32:08,526 test.py __main__ WARNING GGA --> GGC
+2019-10-15 18:32:08,526 test.py __main__ WARNING EcoRI cuts (GAATTC)
+2019-10-15 18:32:08,536 test.py __main__ WARNING AGA --> CGA
+2019-10-15 18:32:08,536 test.py __main__ WARNING EcoRI cuts (GAATTC)
+2019-10-15 18:32:08,543 test.py __main__ WARNING CGA --> CGT
+2019-10-15 18:32:08,543 test.py __main__ INFO remove_cutsites made 7 changes in idi1|OPT|REC sequence
+2019-10-15 18:32:08,543 test.py __main__ DEBUG Making parts...
+2019-10-15 18:32:32,953 test.py __main__ WARNING BsaI cuts (GGTCTC)
+2019-10-15 18:32:32,961 test.py __main__ WARNING GTC --> GTT
+2019-10-15 18:32:32,962 test.py __main__ WARNING BsaI cuts (GAGACC)
+2019-10-15 18:32:32,966 test.py __main__ WARNING GAG --> GAA
+2019-10-15 18:32:32,966 test.py __main__ WARNING BsaI cuts (GAGACC)
+2019-10-15 18:32:32,973 test.py __main__ WARNING GAG --> GAA
+2019-10-15 18:32:32,973 test.py __main__ WARNING BpiI cuts (GAAGAC)
+2019-10-15 18:32:32,984 test.py __main__ WARNING GAA --> GAG
+2019-10-15 18:32:32,984 test.py __main__ INFO remove_cutsites made 4 changes in idi1|OPT|REC sequence
+2019-10-15 18:32:32,984 test.py __main__ DEBUG Making parts...

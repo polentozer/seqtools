@@ -189,9 +189,10 @@ class Nucleotide(Sequence):
         translation = list()
         table = table.reset_index(level='Triplet')
         for triplet in self.make_triplets():
-            if len(triplet) == 3:
+            if len(triplet) == 3 and 'N' not in triplet:
                 translation.append(table[table['Triplet'] == triplet].index[0])
             else:
+                self.logger.warning(f'Unknown translation for codon: {triplet}')
                 translation.append('?')
 
         return Protein(f'{seq_id}|PROT', ''.join(translation))
@@ -290,6 +291,54 @@ class Nucleotide(Sequence):
             sequence = f'{part["prefix"]}{self.sequence}{part["suffix"]}'
 
         return Nucleotide(seq_id, sequence)
+    
+    def source_optimize(self, source_table, mode=0, table=DEFAULT_TABLE):
+        '''Optimize codon usage of a given DNA sequence
+        mode: 0 for closest frequency; 1 for same index'''
+        self.logger.debug('Starting special optimization using source codon table...')
+        if not self.basic_cds:
+            self = bool_user_prompt(self, 'Special optimize')
+            if 'FORCED' not in self.sequence_id:
+                return self
+        
+        self.logger.info(f'Special optimization: {"closest frequency" if mode == 0 else "same index"}')
+
+        seq_id = self.sequence_id
+        optimized = list()
+
+        for amino, triplet in zip(self.translate(table=table).sequence, self.make_triplets()):
+            if amino == '?':
+                self.logger.warning(f'Unknown amino acid! Appending "NNN"')
+                optimized.append('NNN')
+            else:
+                codons = table.loc[amino]
+                source_codons = source_table.loc[amino]
+                sorted_codons_freq = sorted(codons['Fraction'])
+                source_codon_freq = source_codons.loc[triplet]['Fraction']
+
+                if mode == 0:
+                    best, freq = 1, 0
+                    for cod in sorted_codons_freq:
+                        current_best = abs(cod - source_codon_freq)
+                        if current_best < best:
+                            best, freq = current_best, cod
+
+                    closest_freq_codon = codons[codons['Fraction'] == freq].index[0]
+                    self.logger.info(f'{triplet} (f:{source_codon_freq:.3f}) --> {closest_freq_codon} (f:{freq:.3f})')
+                    optimized.append(closest_freq_codon)
+                
+                elif mode == 1:
+                    sorted_source_codons = sorted(source_codons['Fraction'])
+                    source_codon_index = sorted_source_codons.index(source_codons.loc[amino]['Fraction'])
+                    same_index_codon = codons[codons['Fraction'] == sorted_codons_freq[source_codon_index]].index[0]
+                    self.logger.info(f'{triplet} --> {same_index_codon} (i:{source_codon_index})')
+                    optimized.append(same_index_codon)
+                
+                else:
+                    self.logger.error('Unsupported mode, expected: 1 or 0. Skipping operation')
+                    return self
+        
+        return Nucleotide(f'{seq_id}|SOPT{mode}', ''.join(optimized))
 
 
 class Enzyme:

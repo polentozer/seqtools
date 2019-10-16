@@ -38,6 +38,7 @@ from . import __version__ as VERSION
 from seqtools.seqtools_config import LOGGING_CONFIG, RESTRICTION_ENZYMES
 
 ### LOGGER ###
+# TODO: Make argumental logging levels -v (verbose) -w (debug)
 logging.config.dictConfig(LOGGING_CONFIG)
 logger = logging.getLogger(__name__)
 
@@ -128,6 +129,9 @@ def cli_argparser():
     maniputaion.add_argument(
         '-O', '--optimize', action='store_true', default=False,
         help='Use this flag to change output to optimized DNA sequences')
+    maniputaion.add_argument( # TODO
+        '-SO', '--sourceoptimize', type=int, default=None,
+        help='Use this flag to optimize sequence based on codons usage from source organism (tax id)')
     maniputaion.add_argument(
         '-T', '--translate', action='store_true', default=False,
         help='Use this flag to change output to proteins translated from given DNAs')
@@ -159,7 +163,9 @@ def cli_argparser():
         '-oi', '--organism_id', type=int, required=False, default=None,
         help='Organism ID: taxonomy ID')
 
+    # ==================
     # version and end of arguments
+    # ==================
     parser.add_argument('--version', action='version', version=VERSION)
 
     return parser.parse_args()
@@ -208,6 +214,10 @@ def main():
             elif args.translate:
                 logger.info('Translating DNA sequences...')
                 solution = [dna.translate(table=codon_table) for dna in sequences]
+            # Special optimization TODO:
+            elif args.sourceoptimize:
+                source_organism_table = load_codon_table(taxonomy_id=args.sourceoptimize)
+                solution = [dna.source_optimize(source_table=source_organism_table, table=codon_table) for dna in sequences]
             
             # Restriction enzyme recognition sites removal
             if args.remove_cutsites:

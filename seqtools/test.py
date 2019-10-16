@@ -303,8 +303,11 @@ class Protein(Sequence):
             maximum = False
 
         for amino in self.sequence:
-            codons = table.loc[amino]
-            dna_sequence.append(get_codon(codons, maximum=maximum))
+            if amino == '?':
+                dna_sequence.append('NNN')
+            else:
+                codons = table.loc[amino]
+                dna_sequence.append(get_codon(codons, maximum=maximum))
 
         return Nucleotide(f'{self.sequence_id}{name}', ''.join(dna_sequence))
 
@@ -388,7 +391,7 @@ class Nucleotide(Sequence):
         table = table.reset_index(level='Triplet')
 
         for triplet in self.make_triplets():
-            if len(triplet) == 3:
+            if len(triplet) == 3 and 'N' not in triplet:
                 translation.append(table[table['Triplet'] == triplet].index[0])
             else:
                 translation.append('?')
@@ -497,8 +500,9 @@ class Nucleotide(Sequence):
 
         return Nucleotide(seq_id, sequence)
     
-    def optimize_special(self, table_source, table=default_table):
-        '''Optimize codon usage of a given DNA sequence'''
+    def special_optimize(self, table_source, mode=0, table=default_table):
+        '''Optimize codon usage of a given DNA sequence
+        mode: 0 for closest frequency; 1 for same index'''
         if not self.basic_cds:
             self = bool_user_prompt(self, 'Special optimize')
             if 'FORCED' not in self.sequence_id:
@@ -507,14 +511,39 @@ class Nucleotide(Sequence):
         seq_id = self.sequence_id
         optimized = list()
 
-        for amino in self.translate(table=table):
+        for amino, triplet in zip(self.translate(table=table).sequence, self.make_triplets()):
             if amino == '?':
                 optimized.append('NNN')
             else:
                 codons = table.loc[amino]
                 source_codons = table_source.loc[amino]
+
+                sorted_codons = sorted(codons['Fraction'])
+                source_codon_freq = source_codons.loc[triplet]['Fraction']
+
+                if mode == 0:
+                    best, freq = 1, 0
+                    for cod in sorted_codons:
+                        current_best = abs(cod - source_codon_freq)
+                        if current_best < best:
+                            best, freq = current_best, cod
+
+                    closest_freq_codon = codons[codons['Fraction'] == freq].index[0]
+
+                    optimized.append(closest_freq_codon)
+                
+                elif mode == 1:
+                    sorted_source_codons = sorted(source_codons['Fraction'])
+                    source_codon_index = sorted_source_codons.index(source_codons.loc[triplet]['Fraction'])
+                    same_index_codon = codons[codons['Fraction'] == sorted_codons[source_codon_index]].index[0]
+
+                    optimized.append(same_index_codon)
+                
+                else:
+                    print('ERROR')
+                    return self
         
-        pass
+        return Nucleotide(f'{seq_id}|SOPT{mode}', ''.join(optimized))
 
 
 class Enzyme:
@@ -714,7 +743,7 @@ if __name__ == '__main__':
     #     print(test_dna2.optimize_codon_usage(maximum=False).remove_cutsites(re_list))
     # print(test_dna2.remove_cutsites(re_list))
 
-    print(test_dna2.optimize_codon_usage(maximum=False).remove_cutsites(re_list).make_part('3t').fasta)
+    # print(test_dna2.optimize_codon_usage(maximum=False).remove_cutsites(re_list).make_part('3t').fasta)
 
     print()
     print()
@@ -726,56 +755,83 @@ if __name__ == '__main__':
     # print(x)
 
     # Salvia officinalis: 38868 table
-    s_table = load_codon_table(taxonomy_id=38868)
+    # s_table = load_codon_table(taxonomy_id=38868)
+
+    # print(test_dna2.special_optimize(s_table, mode=1))
+
+    # print(test_dna2.translate())
+    # for x in test_dna2.translate().sequence:
+    #     print(x)
+
+    # for amino, cod in zip(test_dna2.translate().sequence, test_dna2.make_triplets()):
+    #     print(cod, amino)
 
     # print(new_table)
     # print(s_table)
 
-    amino = 'V'
-    src = 'GTA'
-    codons = new_table.loc[amino]
-    scodons = s_table.loc[amino]
 
-    print(codons)
-    print(scodons)
+    ########################################################################
+    # amino = 'V'
+    # src = 'GTA'
+    # codons = new_table.loc[amino]
+    # scodons = s_table.loc[amino]
 
-    print()
+    # print(codons)
+    # print(scodons)
 
-    for x, y in codons['Fraction'].items():
-        print(x, y)
+    # print()
 
-    print()
+    # for x, y in codons['Fraction'].items():
+    #     print(x, y)
 
-    sorted_codons = sorted(codons['Fraction'])
-    sorted_scodons = sorted(scodons['Fraction'])
+    # print()
 
-    scodon_occ = scodons.loc[src]['Fraction']
+    # sorted_codons = sorted(codons['Fraction'])
+    # sorted_scodons = sorted(scodons['Fraction'])
+
+    # scodon_occ = scodons.loc[src]['Fraction']
+    # scodon_index = sorted_scodons.index(scodon_occ)
     
-    maped = map(lambda x, y: [x, y], sorted_codons, sorted_scodons)
+    # maped = map(lambda x, y: [x, y], sorted_codons, sorted_scodons)
 
-    # for x in maped:
-    #     print(x)
-    print(list(maped))
-    print(scodon_occ)
+    # # for x in maped:
+    # #     print(x)
+    # print(list(maped))
+    # print(scodon_occ)
+    # print(scodon_index)
 
-    print(sorted_codons)
-    print(sorted_scodons)
-    # print(sorted_codons[-1])
-    # print(codons[codons['Fraction'] == sorted_codons[-1]])
+    # print(sorted_codons)
+    # print(sorted_scodons)
+    # # print(sorted_codons[-1])
+    # # print(codons[codons['Fraction'] == sorted_codons[-1]])
 
-    a = []
-    b = ['x']
+    # a = []
+    # b = ['x']
 
-    if a:
-        print('[] == True')
-    if not a:
-        print('[] == False')
-    if b:
-        print('["x"] == True')
-    if not b:
-        print('["x"] == False')
-    if not c:
-        print("Not defined == False")
-    if c:
-        print("Not defined == True")
+    # if a:
+    #     print('[] == True')
+    # if not a:
+    #     print('[] == False')
+    # if b:
+    #     print('["x"] == True')
+    # if not b:
+    #     print('["x"] == False')
 
+    # print("\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n")
+
+    # best, occ = 1, 0
+    # for cod in sorted_codons:
+    #     current = abs(cod - scodon_occ)
+    #     print(f'best: {best:.5f}    occ: {occ:.5f}    current: {current:.5f}    cod: {cod:.5f}')
+    #     if current < best:
+    #         best, occ = current, cod
+    
+    # closest_freq = codons[codons['Fraction'] == occ]
+    # same_index = codons[codons['Fraction'] == sorted_codons[scodon_index]]
+
+    # print(best)
+    # print(occ)
+
+    # print(f'Closest frequency codon: {closest_freq.index[0]}')
+    # print(f'Same index codon: {same_index.index[0]}')
+    ########################################################################
