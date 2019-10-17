@@ -7,6 +7,11 @@ OPTIMIZATION
 -[x] analyzing dna sequence optimization (from 0-100%)
     -[ ] different optimization stages (from 0-100%)
 -[ ] optimizing GC content
+-[ ] secondary structure detection
+-[ ] validators for GC rich regions
+-[ ] validators for homopolymers
+-[ ] validators for short and long repeats
+
 
 GENERATOR
 -[x] detect restriction sites (type2)

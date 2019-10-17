@@ -98,21 +98,26 @@ def cli_argparser():
     # ------------------
     # analyze options
     # ------------------
+    analyze_sequence_input = analyze_parser.add_mutually_exclusive_group()
     analyze_parser.add_argument(
-        '-t', '--threshold', action='store', type=int,
+        '-t', '--threshold', action='store', type=int, required=False,
         help='How many times should a kmer be repeated to display it')
     analyze_parser.add_argument(
-        '-k', '--kmer', action='store', type=int,
+        '-k', '--kmer', action='store', type=int, required=False,
         help='Length of kmers')
     analyze_parser.add_argument(
         '-p', '--protein', action='store_true', required=False,
         help='Use this flag when input is a protein sequence')
-    analyze_parser.add_argument(
+    analyze_sequence_input.add_argument(
         '-f', '--input_file', type=str, nargs='+', required=False,
         help='Path to input .fasta files')
-    analyze_parser.add_argument(
+    analyze_sequence_input.add_argument(
         '-i', '--input', type=str, required=False,
         help='Paste raw sequence')
+    analyze_parser.add_argument(
+        '-g', '--graph', action='store_true', required=False, default=False,
+        help='Use this flag to graph codon usage frequency')
+
 
     # ==================
     # transform
@@ -124,8 +129,10 @@ def cli_argparser():
     # ------------------
     # transform options
     # ------------------
+    sequence_input = transform.add_mutually_exclusive_group()
     table_input = transform.add_mutually_exclusive_group()
     maniputaion = transform.add_mutually_exclusive_group()
+    graph = transform.add_mutually_exclusive_group()
     maniputaion.add_argument(
         '-O', '--optimize', action='store_true', default=False,
         help='Use this flag to change output to optimized DNA sequences')
@@ -135,10 +142,10 @@ def cli_argparser():
     maniputaion.add_argument(
         '-T', '--translate', action='store_true', default=False,
         help='Use this flag to change output to proteins translated from given DNAs')
-    transform.add_argument(
+    sequence_input.add_argument(
         '-f', '--input_file', type=str, nargs='+', required=False,
         help='Path to input .fasta files')
-    transform.add_argument(
+    sequence_input.add_argument(
         '-i', '--input', type=str, required=False,
         help='Paste raw sequence')
     transform.add_argument(
@@ -162,6 +169,13 @@ def cli_argparser():
     table_input.add_argument(
         '-oi', '--organism_id', type=int, required=False, default=None,
         help='Organism ID: taxonomy ID')
+    graph.add_argument(
+        '-g', '--graph', action='store_true', required=False, default=False,
+        help='Use this flag to show codon usage graph')
+    graph.add_argument(
+        '-G', '--graph_optimized', action='store_true', required=False, default=False,
+        help='Use this flag to show codon usage graph for optimized and basic CDS')
+
 
     # ==================
     # version and end of arguments
@@ -245,6 +259,8 @@ def main():
             # Appending prefixes and suffixes for GGE parts
             if args.type:
                 if args.type in ('1', '2', '3', '3a', '3b', '3t', '4', '4a', '4b', '5', '6', '7', '8', '8a', '8b'):
+                    if args.graph or args.graph_optimized:
+                        storage = solution
                     if solution:
                         target = solution
                     else:
@@ -258,7 +274,7 @@ def main():
         else:
             logger.error('Fasta file is empty or no sequence provided...')
 
-        # saving/printing solutions
+        # Saving/printing solutions
         if args.output:
             path_save = os.path.join(os.path.join(os.getcwd(), args.output))
             write_fasta(solution, path_save)
@@ -266,6 +282,19 @@ def main():
         else:
             for sequence in solution:
                 sys.stdout.write(f'\n{sequence.fasta}\n')
+        
+        # Drawing graphs
+        if args.graph:
+            logger.info('Drawing graphs...')
+            if not args.type:
+                storage = solution
+            for seq in storage:
+                seq.graph_codon_usage(window=10, table=codon_table)
+        elif args.graph_optimized:
+            logger.info('Drawing graphs...')
+            for seq_original, seq_optimized in zip(sequences, storage):
+                seq_optimized.graph_codon_usage(window=10, other=seq_original, table=codon_table)
+        
         logger.info('DONE')
 
     # GENERATOR

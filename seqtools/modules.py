@@ -1,6 +1,8 @@
 #cSpell: Disable#
 import re
+import pandas
 import logging
+import matplotlib.pyplot as plt
 from seqtools.seqtools_config import GGA_PART_TYPES, LOGGING_CONFIG
 from seqtools.util import bool_user_prompt, sequence_match, get_codon, load_codon_table
 
@@ -339,6 +341,63 @@ class Nucleotide(Sequence):
                     return self
         
         return Nucleotide(f'{seq_id}|SOPT{mode}', ''.join(optimized))
+    
+    def graph_codon_usage(self, window=10, other=None, table=DEFAULT_TABLE):
+        '''Graph codon frequency of a given gene'''
+        only_self = False
+        data, reduced_data, temp = [], [], []
+        codons = table.reset_index().set_index(['Triplet'])
+
+        if not self.basic_cds:
+            self.logger.error(f'{self.sequence_id} is not a CDS. Skipping operation...')
+            return
+
+        elif other:
+            if not isinstance(other, Nucleotide) or not other.basic_cds:
+                self.logger.error(f'{other.sequence_id} is not a CDS. Skipping to graphing only {self.sequence_id}...')
+                only_self = True
+                pass
+            else:
+                self.logger.info(f'Graphing codon usage for {self.sequence_id} and {other.sequence_id}')
+                for self_triplet, other_triplet in zip(self.make_triplets(), other.make_triplets()):
+
+                    self_freq = codons.loc[self_triplet]['Fraction']
+                    other_freq = codons.loc[other_triplet]['Fraction']
+
+                    data.append((self_freq, other_freq))
+
+                while data:
+                    frequency = data[0]
+                    if (len(temp) == window or len(data) < window) and temp:
+                        self_window_frequency = sum([f[0] for f in temp]) / len(temp)
+                        other_window_frequency = sum([f[1] for f in temp]) / len(temp)
+                        reduced_data.append((self_window_frequency, other_window_frequency))
+                        temp = []
+                    temp.append(frequency)
+                    data.pop(0)
+
+                frequency_table = pandas.DataFrame(reduced_data, columns=['self', 'other'])
+
+        if not other or only_self:
+            self.logger.info(f'Graphing codon usage for {self.sequence_id}')
+            for self_triplet in self.make_triplets():
+                data.append(codons.loc[self_triplet]['Fraction'])
+
+            while data:
+                frequency = data[0]
+                if (len(temp) == window or len(data) < window) and temp:
+                    self_window_frequency = sum([f for f in temp]) / len(temp)
+                    reduced_data.append(self_window_frequency)
+                    temp = []
+                temp.append(frequency)
+                data.pop(0)
+
+            frequency_table = pandas.DataFrame(reduced_data, columns=['self'])
+
+        frequency_table.plot()
+        plt.show()
+
+        return
 
 
 class Enzyme:
