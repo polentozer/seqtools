@@ -134,13 +134,13 @@ def cli_argparser():
     maniputaion = transform.add_mutually_exclusive_group()
     graph = transform.add_mutually_exclusive_group()
     maniputaion.add_argument(
-        '-O', '--optimize', action='store_true', default=False,
+        '-O', '--optimize', action='store_true', default=False, required=False,
         help='Use this flag to change output to optimized DNA sequences')
-    maniputaion.add_argument( # TODO
-        '-SO', '--sourceoptimize', type=int, default=None,
+    maniputaion.add_argument(
+        '-H', '--harmonize', default=None, required=False,
         help='Use this flag to optimize sequence based on codons usage from source organism (tax id)')
     maniputaion.add_argument(
-        '-T', '--translate', action='store_true', default=False,
+        '-T', '--translate', action='store_true', default=False, required=False,
         help='Use this flag to change output to proteins translated from given DNAs')
     sequence_input.add_argument(
         '-f', '--input_file', type=str, nargs='+', required=False,
@@ -149,7 +149,7 @@ def cli_argparser():
         '-i', '--input', type=str, required=False,
         help='Paste raw sequence')
     transform.add_argument(
-        '-o', '--output', type=str, nargs='?',
+        '-o', '--output', type=str, nargs='?', required=False,
         help='Path for the output fasta file')
     transform.add_argument(
         '-P', '--protein', action='store_true', required=False, default=False,
@@ -161,7 +161,7 @@ def cli_argparser():
         '-t', '--type', type=str, required=False, default=None,
         help='Use this flag if you want your sequences transformed to parts of certain type')
     transform.add_argument(
-        '-re', '--remove_cutsites', action='store_true', default=False,
+        '-re', '--remove_cutsites', action='store_true', default=False, required=False,
         help='Use this flag when you want to remove cutsites from your DNA sequences. Used by default if "type" arguemnt is given')
     table_input.add_argument(
         '-on', '--organism_name', type=str, required=False, default=None,
@@ -175,7 +175,9 @@ def cli_argparser():
     graph.add_argument(
         '-G', '--graph_optimized', action='store_true', required=False, default=False,
         help='Use this flag to show codon usage graph for optimized and basic CDS')
-
+    graph.add_argument(
+        '-gh', '--graph_harmonized', action='store_true', required=False, default=False,
+        help='Use this flag to show codon usage graph for optimized and basic CDS')
 
     # ==================
     # version and end of arguments
@@ -229,9 +231,12 @@ def main():
                 logger.info('Translating DNA sequences...')
                 solution = [dna.translate(table=codon_table) for dna in sequences]
             # Special optimization TODO:
-            elif args.sourceoptimize:
-                source_organism_table = load_codon_table(taxonomy_id=args.sourceoptimize)
-                solution = [dna.source_optimize(source_table=source_organism_table, table=codon_table) for dna in sequences]
+            elif args.harmonize:
+                if type(args.harmonize) == int:
+                    source_organism_table = load_codon_table(taxonomy_id=args.harmonize)
+                elif type(args.harmonize) == str:
+                    source_organism_table = load_codon_table(species=args.harmonize)
+                solution = [dna.harmonize(source_table=source_organism_table, table=codon_table) for dna in sequences]
             
             # Restriction enzyme recognition sites removal
             if args.remove_cutsites:
@@ -269,6 +274,8 @@ def main():
                     solution = [dna.make_part(part_type=args.type) for dna in target]
                 else:
                     logger.warning(f'Part type{args.type} does not exist; skipping transformation into parts')
+            elif args.graph or args.graph_optimized:
+                storage = solution
 
         # No sequences
         else:
@@ -284,16 +291,28 @@ def main():
                 sys.stdout.write(f'\n{sequence.fasta}\n')
         
         # Drawing graphs
-        if args.graph:
-            logger.info('Drawing graphs...')
-            if not args.type:
-                storage = solution
-            for seq in storage:
-                seq.graph_codon_usage(window=10, table=codon_table)
-        elif args.graph_optimized:
-            logger.info('Drawing graphs...')
-            for seq_original, seq_optimized in zip(sequences, storage):
-                seq_optimized.graph_codon_usage(window=10, other=seq_original, table=codon_table)
+        if args.graph or args.graph_optimized or args.graph_harmonized:
+            if args.organism_name:
+                target = args.organism_name
+            elif args.organism_id:
+                target = args.organism_id
+            else:
+                target = 'Yarrowia lipolytica'
+
+            if args.graph:
+                logger.info('Drawing graphs...')
+                for seq in storage:
+                    seq.graph_codon_usage(window=16, table=codon_table, target=target)
+
+            elif args.graph_optimized:
+                logger.info('Drawing graphs...')
+                for seq_original, seq_optimized in zip(sequences, storage):
+                    seq_optimized.graph_codon_usage(window=16, other=seq_original, table=codon_table, target=target)
+            
+            elif args.graph_harmonized and args.harmonize:
+                logger.info('Drawing graphs...')
+                for seq_original, seq_optimized in zip(sequences, storage):
+                    seq_optimized.graph_codon_usage(window=16, other=seq_original, other_id=args.harmonize, table=codon_table, target=target)
         
         logger.info('DONE')
 

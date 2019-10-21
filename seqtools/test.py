@@ -9,17 +9,205 @@ import logging
 import pyperclip
 import logging.config
 import matplotlib.pyplot as plt
-from seqtools_config import *
 from distutils.util import strtobool
 
-### LOGGER ###
-logging.config.dictConfig(LOGGING_CONFIG)
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+### SEABORN ###
+plt.style.use('seaborn-deep')
+# plt.style.use('ggplot')
 
 ###### DATA ######
+GGA_PART_TYPES = {
+    'type1': {
+        'prefix': 'GCATCGTCTCATCGGAGTCGGTCTCACCCT',
+        'suffix': 'AACGAGAGACCAGCAGACCAGAGACGGCAT',
+        'info': 'Left side assembly connector'
+    },
+    'type2': {
+        'prefix': 'GCATCGTCTCATCGGTCTCAAACG',
+        'suffix': 'TATGAGAGACCTGAGACGGCAT',
+        'info': 'Promotor'
+    },
+    'type3': {
+        'prefix': 'GCATCGTCTCATCGGTCTCAT',
+        'suffix': 'ATCCAGAGACCTGAGACGGCAT',
+        'info': 'CDS'
+    },
+    'type3a': {
+        'prefix': 'GCATCGTCTCATCGGTCTCAT',
+        'suffix': 'GGTTCTAGAGACCTGAGACGGCAT',
+        'info': 'N-terminal CDS'
+    },
+    'type3b': {
+        'prefix': 'GCATCGTCTCATCGGTCTCATTCT',
+        'suffix': 'GGATCCAGAGACCTGAGACGGCAT',
+        'info': 'CDS'
+    },
+    'type3t': {
+        'prefix': 'GCATCGTCTCATCGGTCTCAT',
+        'suffix': 'GGATCCTGAGACCTGAGACGGCAT',
+        'info': 'True type3 CDS (GS linker, no STOP)'
+    },
+    'type4': {
+        'prefix': 'GCATCGTCTCATCGGTCTCAATCC',
+        'suffix': 'GCTGAGAGACCTGAGACGGCAT',
+        'info': 'Terminator'
+    },
+    'type4a': {
+        'prefix': 'GCATCGTCTCATCGGTCTCAATCC',
+        'suffix': 'TGGCAGAGACCTGAGACGGCAT',
+        'info': 'C-terminal CDS'
+    },
+    'type4b': {
+        'prefix': 'GCATCGTCTCATCGGTCTCATGGC',
+        'suffix': 'GCTGAGAGACCTGAGACGGCAT',
+        'info': 'Terminator'
+    },
+    'type5': {
+        'prefix': 'GCATCGTCTCATCGGAGTCGGTCTCAGCTG',
+        'suffix': 'TACAAGAGACCAGCAGACCAGAGACGGCAT',
+        'info': 'Right side assembly connector'
+    },
+    'type6': {
+        'prefix': 'GCATCGTCTCATCGGTCTCATACA',
+        'suffix': 'GAGTAGAGACCTGAGACGGCAT',
+        'info': 'Yeast marker'
+    },
+    'type7': {
+        'prefix': 'GCATCGTCTCATCGGTCTCAGAGT',
+        'suffix': 'CCGAAGAGACCTGAGACGGCAT',
+        'info': "3'-homology or yeast origin"
+    },
+    'type8': {
+        'prefix': 'GCATCGTCTCATCGGTCTCACCGA',
+        'suffix': 'CCCTAGAGACCAGAGACGGCAT',
+        'info': 'E. coli marker and origin'
+    },
+    'type8a': {
+        'prefix': 'GCATCGTCTCATCGGTCTCACCGA',
+        'suffix': 'CAATAGAGACCAGAGACGGCAT',
+        'info': 'E. coli marker and origin'
+    },
+    'type8b': {
+        'prefix': 'GCATCGTCTCATCGGTCTCACAAT',
+        'suffix': 'CCCTAGAGACCAGAGACGGCAT',
+        'info': "5'-homology"
+    },
+    'typeX': {
+        'prefix': 'GCATCGTCTCATCGGTCTCANNNN',
+        'suffix': 'NNNNAGAGACCAGAGACGGCAT',
+        'info': 'Custom parts'
+    }
+}
+
+RESTRICTION_ENZYMES = {
+    'BsaI': {
+        'substrate': 'DNA',
+        'recognition': 'GGTCTC',
+        'jump': 1,
+        'overhang': 4,
+        'incubation_temperature': 37,
+        'overhang_type': '5`',
+        'methylation_sensitivity': {
+            'Dam': False,
+            'Dcm': True,
+            'EcoKI': False
+        },
+        'description': 'Type 2 restriction enzyme used in modular cloning or MoClo for short. Sticky ends from different BsaI sites may not be compatible. BsaI can be used between 37 and 50 °C.'
+    },
+    'BsmBI': {
+        'substrate': 'DNA',
+        'recognition': 'CGTCTC',
+        'jump': 1,
+        'overhang': 4,
+        'incubation_temperature': 55,
+        'overhang_type': '5`',
+        'methylation_sensitivity': {
+            'Dam': False,
+            'Dcm': False,
+            'EcoKI': False
+        },
+        'description': 'Type 2 restriction enzyme used in modular cloning or MoClo for short. Sticky ends from different BsmBI sites may not be compatible.'
+    },
+    'NotI': {
+        'substrate': 'DNA',
+        'recognition': 'GCGGCCGC',
+        'jump': 0,
+        'overhang': 4,
+        'incubation_temperature': 37,
+        'overhang_type': '5`',
+        'methylation_sensitivity': {
+            'Dam': False,
+            'Dcm': False,
+            'EcoKI': False
+        },
+        'description': 'Classic restriction enzyme commonly used in cloning. This particular enzyme has has very rare recognition site.'
+    },
+    'BpiI': {
+        'substrate': 'DNA',
+        'recognition': 'GAAGAC',
+        'jump': 2,
+        'overhang': 4,
+        'incubation_temperature': 37,
+        'overhang_type': '5`',
+        'methylation_sensitivity': {
+            'Dam': False,
+            'Dcm': False,
+            'EcoKI': False
+        },
+        'description': 'Type 2 restriction enzyme used in modular cloning or MoClo for short. Sticky ends from different BsmBI sites may not be compatible.'
+    },
+    'EcoRI': {
+        'substrate': 'DNA',
+        'recognition': 'GAATTC',
+        'jump': 0,
+        'overhang': 4,
+        'incubation_temperature': 37,
+        'overhang_type': '5`',
+        'methylation_sensitivity': {
+            'Dam': False,
+            'Dcm': False,
+            'EcoKI': False
+        },
+        'description': 'Classic restriction enzyme commonly used in cloning.'
+    }
+}
+
+LOGGING_CONFIG = {
+    'version': 1,
+    'formatters': {
+        'simple': {
+            'format': '%(asctime)s %(filename)s %(name)s %(levelname)s %(message)s'
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'level': 'INFO',
+            'formatter': 'simple',
+            'stream': 'ext://sys.stdout',
+        },
+        'file': {
+            'class': 'logging.FileHandler',
+            'level': 'DEBUG',
+            'formatter': 'simple',
+            'filename': 'seqtools.log'
+        }
+    },
+    'loggers': {
+        '__main__': {
+            'level': 'DEBUG',
+            'handlers': ['console', 'file'],
+            'propagate': False
+        }
+    },
+    'root': {
+        'level': 'DEBUG',
+        'handlers': ['console']
+    }
+}
+
 COMMON_SPECIES = {
-    'ecoli': '83333',
+    'ecoli': '37762',
     'yeast':  '4932',
     'human': '9606',
     'bsub': '1432',
@@ -46,6 +234,11 @@ STANDARD_GENETIC_CODE = [
     'D', 'D', 'Y', 'Y', 'C', 'C', 'F', 'F',
     'I', 'I', 'I', 'M', 'W', '*', '*', '*'
 ]
+
+### LOGGER ###
+logging.config.dictConfig(LOGGING_CONFIG)
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 ###########################################
 ###                                     ###
@@ -116,7 +309,7 @@ def melting_temperature(dna_sequence):
     return 2 * sum(map(dna_sequence.count, weak)) + 4 * sum(map(dna_sequence.count, strong))
 
 
-def load_codon_table(species=None, taxonomy_id=None, custom=False):
+def load_codon_table(species=None, taxonomy_id=None, custom=False, return_name=False):
     '''Load a codon table based on the organism's species ID'''
     # CODON_USAGE_DB = f'{os.path.dirname(__file__)}/data/codon_usage.spsum'
     # CUSTOM_CODON_USAGE_DB = f'{os.path.dirname(__file__)}/data/custom_table.spsum'
@@ -143,14 +336,19 @@ def load_codon_table(species=None, taxonomy_id=None, custom=False):
             if taxonomy_id and taxonomy_id != taxid:
                 continue
 
-            table = list(
-                zip(CODONS, STANDARD_GENETIC_CODE, [int(x) for x in codon_counts.split()]))
+            table = list(zip(CODONS, STANDARD_GENETIC_CODE, [int(x) for x in codon_counts.split()]))
             table = pandas.DataFrame(table, columns=['Triplet', 'AA', 'Number'])
             table.set_index(['AA', 'Triplet'], inplace=True)
             table.sort_index(inplace=True)
+            total = sum(table['Number'])
 
             table['Fraction'] = table.groupby('AA').transform(lambda x: x / x.sum())
+            table['Frequency'] = table['Number'] / total * 1000
+
             break
+    
+    if return_name:
+        return table, species
 
     return table
 
@@ -222,7 +420,7 @@ def write_fasta(sequence_list, path=''):
 
 
 # NOTE: This will go away once code is refractured
-default_table = load_codon_table(species='yali')
+DEFAULT_TABLE = load_codon_table(species='yali')
 
 ###########################################
 ###                                     ###
@@ -292,7 +490,7 @@ class Protein(Sequence):
         else:
             raise ValueError
 
-    def reverse_translate(self, table=default_table, maximum=False):
+    def reverse_translate(self, table=DEFAULT_TABLE, maximum=False):
         '''Returns optimized DNA sequence'''
         dna_sequence = list()
 
@@ -379,7 +577,7 @@ class Nucleotide(Sequence):
         '''Makes list of chunks 3 characters long from a sequence'''
         return [self.sequence[start:start + 3] for start in range(0, len(self.sequence), 3)]
 
-    def translate(self, table=default_table, check=False):
+    def translate(self, table=DEFAULT_TABLE, check=False):
         '''Translate DNA sequence in PROTEIN sequence'''
         if not check:
             if not self.basic_cds:
@@ -434,7 +632,7 @@ class Nucleotide(Sequence):
                 logger.info("pass")
         return
 
-    def recode_sequence(self, replace, table=default_table, maximum=False):
+    def recode_sequence(self, replace, table=DEFAULT_TABLE, maximum=False):
         '''Recode a sequence to replace certain sequences using a given codon table.'''
         position = self.sequence.find(replace)
 
@@ -462,7 +660,7 @@ class Nucleotide(Sequence):
 
         return self
 
-    def remove_cutsites(self, restriction_enzymes, table=default_table):
+    def remove_cutsites(self, restriction_enzymes, table=DEFAULT_TABLE):
         '''Remove recognition sites for restriction enzymes.'''
         changes = 0
 
@@ -477,7 +675,7 @@ class Nucleotide(Sequence):
 
         return self
 
-    def optimize_codon_usage(self, table=default_table, maximum=False):
+    def optimize_codon_usage(self, table=DEFAULT_TABLE, maximum=False):
         '''Optimize codon usage of a given DNA sequence'''
         if not self.basic_cds:
             self = bool_user_prompt(self, 'Optimize')
@@ -501,7 +699,7 @@ class Nucleotide(Sequence):
 
         return Nucleotide(seq_id, sequence)
     
-    def special_optimize(self, table_source, mode=0, table=default_table):
+    def harmonize(self, table_source, mode=0, table=DEFAULT_TABLE):
         '''Optimize codon usage of a given DNA sequence
         mode: 0 for closest frequency; 1 for same index'''
         if not self.basic_cds:
@@ -544,55 +742,125 @@ class Nucleotide(Sequence):
                     print('ERROR')
                     return self
         
-        return Nucleotide(f'{seq_id}|SOPT{mode}', ''.join(optimized))
+        return Nucleotide(f'{seq_id}|HAR{mode}', ''.join(optimized))
     
-    def draw_graph(self, window=10, other=None, table=default_table):
+    def graph_codon_usage(self, window=16, other=None, other_id=None, table=DEFAULT_TABLE, minmax=True, target='Yarrowia lipolytica'):
         '''Graph codon frequency of a given gene'''
-        data, reduced_data, temp = [], [], []
-        codons = table.reset_index().set_index(['Triplet'])
 
         if not self.basic_cds:
             return
 
-        elif isinstance(other, Nucleotide) and other.basic_cds:
-            for self_triplet, other_triplet in zip(self.make_triplets(), other.make_triplets()):
+        if isinstance(other, Nucleotide) and other.basic_cds:
+            if other_id:
+                if other_id in COMMON_SPECIES:
+                    other_id = COMMON_SPECIES[other_id]
+                table_other, species = load_codon_table(taxonomy_id=other_id, return_name=True)
+            else:
+                table_other = table
+            if minmax:
+                data = [x for x in zip(self.data_minmax(table=table, window=window), other.data_minmax(table=table_other, window=window))]
+            else:
+                data = [x for x in zip(self.data_fraction(table=table, window=window), other.data_fraction(table=table_other, window=window))]
+        else:
+            if minmax:
+                data = self.data_minmax(table=table, window=window)
+            else:
+                data = self.data_fraction(table=table, window=window)
 
-                self_freq = codons.loc[self_triplet]['Fraction']
-                other_freq = codons.loc[other_triplet]['Fraction']
+        x = range(len(data))
+        zeros = [0 for i in x]
 
-                data.append((self_freq, other_freq))
+        if other:
+            y1 = [i[0] for i in data]
+            y2 = [i[1] for i in data]
+            _, (ax0, ax1) = plt.subplots(2, 1, sharex=True, figsize=(12, 5))
+            plt.subplots_adjust(left=.08, right=0.98, hspace=.5)
 
-            while data:
-                frequency = data[0]
-                if (len(temp) == window or len(data) < window) and temp:
-                    self_window_frequency = sum([f[0] for f in temp]) / len(temp)
-                    other_window_frequency = sum([f[1] for f in temp]) / len(temp)
-                    reduced_data.append((self_window_frequency, other_window_frequency))
-                    temp = []
-                temp.append(frequency)
-                data.pop(0)
+            ax0.plot(x, y1, alpha=0.8, linewidth=.5)
+            ax0.set_title(f'Codon usage plot for {self.sequence_id} in {target}')
 
-            frequency_table = pandas.DataFrame(reduced_data, columns=['self', 'other'])
+            if minmax:
+                ax0.set_ylim(-100, 100)
+                ax0.axhline(0, color='black', linewidth=.5)
+                ax0.fill_between(x, y1, zeros, where=[True if y > 0 else False for y in y1], alpha=0.5, interpolate=True, color='C0')
+                ax0.fill_between(x, y1, zeros, where=[True if y < 0 else False for y in y1], alpha=0.5, interpolate=True, color='C2')
+                ax0.set_ylabel('%MinMax Value')
+            else:
+                ax0.set_ylabel('Fraction')
+
+            ax1.plot(x, y2, alpha=0.8, linewidth=.5)
+            if other_id:
+                target = species
+            ax1.set_title(f'Codon usage plot for {other.sequence_id} in {target}')
+
+            if minmax:
+                ax1.set_ylim(-100, 100)
+                ax1.axhline(0, color='black', linewidth=.5)
+                ax1.fill_between(x, y2, zeros, where=[True if y > 0 else False for y in y2], alpha=0.5, interpolate=True, color='C0')
+                ax1.fill_between(x, y2, zeros, where=[True if y < 0 else False for y in y2], alpha=0.5, interpolate=True, color='C2')
+                ax1.set_ylabel('%MinMax Value')
+            else:
+                ax1.set_ylabel('Fraction')
 
         else:
-            for self_triplet in self.make_triplets():
-                data.append(codons.loc[self_triplet]['Fraction'])
+            _, ax = plt.subplots(1, 1, figsize=(12, 2))
+            plt.subplots_adjust(left=.08, right=0.98, bottom=.25)
+            ax.plot(x, data, alpha=0.8, linewidth=.5)
+            ax.set_title(f'Codon usage plot for {self.sequence_id} in {target}')
 
-            while data:
-                frequency = data[0]
-                if (len(temp) == window or len(data) < window) and temp:
-                    self_window_frequency = sum([f for f in temp]) / len(temp)
-                    reduced_data.append(self_window_frequency)
-                    temp = []
-                temp.append(frequency)
-                data.pop(0)
+            if minmax:
+                ax.set_ylim(-100, 100)
+                ax.axhline(0, color='black', linewidth=.5)
+                ax.fill_between(x, data, zeros, where=[True if y > 0 else False for y in data], alpha=0.5, interpolate=True, color='C0')
+                ax.fill_between(x, data, zeros, where=[True if y < 0 else False for y in data], alpha=0.5, interpolate=True, color='C2')
+                ax.set_ylabel('%MinMax Value')
+            else:
+                ax.set_ylabel('Fraction')
 
-            frequency_table = pandas.DataFrame(reduced_data, columns=['self'])
-
-        frequency_table.plot()
+        plt.xlim(-4, len(data)+4)
+        plt.xlabel('Codon No.')
         plt.show()
 
         return
+
+    def data_minmax(self, table=DEFAULT_TABLE, window=16):
+        values, data = [], []
+        tri_table = table.reset_index(level='Triplet')
+
+        for triplet in self.make_triplets():
+            freq = tri_table[tri_table['Triplet'] == triplet]['Frequency'][0]
+            codons = table.loc[tri_table[tri_table['Triplet'] == triplet].index[0]]
+
+            values.append((freq, max(codons.Frequency), min(codons.Frequency), sum(codons.Frequency)/len(codons)))
+
+        for n in range(len(values)+1-window):
+            temp = values[n:n+window]
+            actual = sum([f[0] for f in temp]) / window
+            maximum = sum([f[1] for f in temp]) / window
+            minimum = sum([f[2] for f in temp]) / window
+            average = sum([f[3] for f in temp]) / window
+
+            maxi = ((actual - average) / (maximum - average)) * 100
+            mini = ((average - actual) / (average - minimum)) * 100
+
+            if maxi > 0:
+                data.append(maxi)
+            elif mini > 0:
+                data.append(-mini)
+
+        return data
+
+    def data_fraction(self, table=DEFAULT_TABLE, window=16):
+        values, data = [], []
+        codons = table.reset_index().set_index(['Triplet'])
+
+        for triplet in self.make_triplets():
+            values.append(codons.loc[triplet]['Fraction'])
+
+        for n in range(len(values)+1-window):
+            data.append(sum([f for f in values[n:n+window]]) / window)
+
+        return data
 
 
 class Enzyme:
@@ -798,6 +1066,8 @@ if __name__ == '__main__':
 
     print()
     print()
+
+    # ecmad.optimize_codon_usage().graph_codon_usage(other=ecmad)
     # l1 = [1, 2, 3, 4]
     # l2 = [2, 4, 6, 8]
 
@@ -808,7 +1078,7 @@ if __name__ == '__main__':
     # Salvia officinalis: 38868 table
     # s_table = load_codon_table(taxonomy_id=38868)
 
-    # print(test_dna2.special_optimize(s_table, mode=1))
+    # print(test_dna2.harmonize(s_table, mode=1))
 
     # print(test_dna2.translate())
     # for x in test_dna2.translate().sequence:
@@ -856,18 +1126,6 @@ if __name__ == '__main__':
     # # print(sorted_codons[-1])
     # # print(codons[codons['Fraction'] == sorted_codons[-1]])
 
-    # a = []
-    # b = ['x']
-
-    # if a:
-    #     print('[] == True')
-    # if not a:
-    #     print('[] == False')
-    # if b:
-    #     print('["x"] == True')
-    # if not b:
-    #     print('["x"] == False')
-
     # print("\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n")
 
     # best, occ = 1, 0
@@ -888,28 +1146,76 @@ if __name__ == '__main__':
     ########################################################################
 
     source_table = load_codon_table(species='ecoli')
-    yeast_table = load_codon_table(species='yeast')
+    # yeast_table = load_codon_table(species='yeast')
 
-    options = new_table.reset_index().set_index(['Triplet'])
-    source_options = source_table.reset_index().set_index(['Triplet'])
+    # options = new_table.reset_index().set_index(['Triplet'])
+    # source_options = source_table.reset_index().set_index(['Triplet'])
 
     # test_dna2_opt = test_dna2.optimize_codon_usage(maximum=True)
     # test_dna2_opt = test_dna2.optimize_codon_usage(maximum=False)
-    # test_dna2_opt = test_dna2.special_optimize(table_source=source_table)
+    # test_dna2_opt = test_dna2.harmonize(table_source=source_table)
 
-    mad = Nucleotide('mad', 'ATGAACAACGGCACAAATAATTTTCAGAACTTCATCGGGATCTCAAGTTTGCAGAAAACGCTGCGCAATGCTCTGATCCCCACGGAAACCACGCAACAGTTCATCGTCAAGAACGGAATAATTAAAGAAGATGAGTTACGTGGCGAGAACCGCCAGATTCTGAAAGATATCATGGATGACTACTACCGCGGATTCATCTCTGAGACTCTGAGTTCTATTGATGACATAGATTGGACTAGCCTGTTCGAAAAAATGGAAATTCAGCTGAAAAATGGTGATAATAAAGATACCTTAATTAAGGAACAGACAGAGTATCGGAAAGCAATCCATAAAAAATTTGCGAACGACGATCGGTTTAAGAACATGTTTAGCGCCAAACTGATTAGTGACATATTACCTGAATTTGTCATCCACAACAATAATTATTCGGCATCAGAGAAAGAGGAAAAAACCCAGGTGATAAAATTGTTTTCGCGCTTTGCGACTAGCTTTAAAGATTACTTCAAGAACCGTGCAAATTGCTTTTCAGCGGACGATATTTCATCAAGCAGCTGCCATCGCATCGTCAACGACAATGCAGAGATATTCTTTTCAAATGCGCTGGTCTACCGCCGGATCGTAAAATCGCTGAGCAATGACGATATCAACAAAATTTCGGGCGATATGAAAGATTCATTAAAAGAAATGAGTCTGGAAGAAATATATTCTTACGAGAAGTATGGGGAATTTATTACCCAGGAAGGCATTAGCTTCTATAATGATATCTGTGGGAAAGTCAATTCTTTTATGAACCTGTATTGTCAGAAAAATAAAGAAAACAAAAATTTATACAAACTTCAGAAACTTCACAAACAGATTCTATGCATTGCGGACACTAGCTATGAGGTCCCGTATAAATTTGAAAGTGACGAGGAAGTGTACCAATCAGTTAACGGCTTCCTTGATAACATTAGCAGCAAACATATAGTCGAAAGATTACGCAAAATCGGCGATAACTATAACGGCTACAACCTGGATAAAATTTATATCGTGTCCAAATTTTACGAGAGCGTTAGCCAAAAAACCTACCGCGACTGGGAAACAATTAATACCGCCCTCGAAATTCATTACAATAATATCTTGCCGGGTAACGGTAAAAGTAAAGCCGACAAAGTAAAAAAAGCGGTTAAGAATGATTTACAGAAATCCATCACCGAAATAAATGAACTAGTGTCAAACTATAAGCTGTGCAGTGACGACAACATCAAAGCGGAGACTTATATACATGAGATTAGCCATATCTTGAATAACTTTGAAGCACAGGAATTGAAATACAATCCGGAAATTCACCTAGTTGAATCCGAGCTCAAAGCGAGTGAGCTTAAAAACGTGCTGGACGTGATCATGAATGCGTTTCATTGGTGTTCGGTTTTTATGACTGAGGAACTTGTTGATAAAGACAACAATTTTTATGCGGAACTGGAGGAGATTTACGATGAAATTTATCCAGTAATTAGTCTGTACAACCTGGTTCGTAACTACGTTACCCAGAAACCGTACAGCACGAAAAAGATTAAATTGAACTTTGGAATACCGACGTTAGCAGACGGTTGGTCAAAGTCCAAAGAGTATTCTAATAACGCTATCATACTGATGCGCGACAATCTGTATTATCTGGGCATCTTTAATGCGAAGAATAAACCGGACAAGAAGATTATCGAGGGTAATACGTCAGAAAATAAGGGTGACTACAAAAAGATGATTTATAATTTGCTCCCGGGTCCCAACAAAATGATCCCGAAAGTTTTCTTGAGCAGCAAGACGGGGGTGGAAACGTATAAACCGAGCGCCTATATCCTAGAGGGGTATAAACAGAATAAACATATCAAATCTTCAAAAGACTTTGATATCACTTTCTGTCATGATCTGATCGACTACTTCAAAAACTGTATTGCAATTCATCCCGAGTGGAAAAACTTCGGTTTTGATTTTAGCGACACCAGTACTTATGAGGACATTTCCGGGTTTTATCGTGAGGTAGAGTTACAAGGTTACAAGATTGATTGGACATACATTAGCGAAAAAGACATTGATCTGCTGCAGGAAAAAGGTCAACTGTATCTGTTCCAGATATATAACAAAGATTTTTCGAAAAAATCAACCGGGAATGACAACCTTCACACCATGTACCTGAAAAATCTTTTCTCAGAAGAAAATCTTAAGGATATCGTCCTGAAACTTAACGGCGAAGCGGAAATCTTCTTCAGGAAGAGCAGCATAAAGAACCCAATCATTCATAAAAAAGGCTCGATTTTAGTCAACCGTACCTACGAAGCAGAAGAAAAAGACCAGTTTGGCAACATTCAAATTGTGCGTAAAAATATTCCGGAAAACATTTATCAGGAGCTGTACAAATACTTCAACGATAAAAGCGACAAAGAGCTGTCTGATGAAGCAGCCAAACTGAAGAATGTAGTGGGACACCACGAGGCAGCGACGAATATAGTCAAGGACTATCGCTACACGTATGATAAATACTTCCTTCATATGCCTATTACGATCAATTTCAAAGCCAATAAAACGGGTTTTATTAATGATAGGATCTTACAGTATATCGCTAAAGAAAAAGACTTACATGTGATCGGCATTGATCGGGGCGAGCGTAACCTGATCTACGTGTCCGTGATTGATACTTGTGGTAATATAGTTGAACAGAAAAGCTTTAACATTGTAAACGGCTACGACTATCAGATAAAACTGAAACAACAGGAGGGCGCTAGACAGATTGCGCGGAAAGAATGGAAAGAAATTGGTAAAATTAAAGAGATCAAAGAGGGCTACCTGAGCTTAGTAATCCACGAGATCTCTAAAATGGTAATCAAATACAATGCAATTATAGCGATGGAGGATTTGTCTTATGGTTTTAAAAAAGGGCGCTTTAAGGTCGAACGGCAAGTTTACCAGAAATTTGAAACCATGCTCATCAATAAACTCAACTATCTGGTATTTAAAGATATTTCGATTACCGAGAATGGCGGACTCCTGAAAGGTTATCAGCTGACATACATTCCTGATAAACTTAAAAACGTGGGTCATCAGTGCGGCTGCATTTTTTATGTGCCTGCTGCATACACGAGCAAAATTGATCCGACCACCGGCTTTGTGAATATCTTTAAATTTAAAGACCTGACAGTGGACGCAAAACGTGAGTTCATTAAAAAATTTGACTCAATTCGTTATGACAGTGAAAAAAATCTGTTCTGCTTTACATTTGACTACAATAACTTTATTACGCAAAACACGGTCATGAGCAAATCATCGTGGAGTGTGTATACATACGGCGTGCGCATCAAACGTCGCTTTGTGAACGGCCGCTTCTCAAACGAAAGTGATACCATTGACATAACCAAAGATATGGAGAAAACGTTGGAAATGACGGACATTAACTGGCGCGATGGCCACGATCTTCGTCAAGACATTATAGATTATGAAATTGTTCAGCACATATTCGAAATTTTCCGTTTAACAGTGCAAATGCGTAACTCCTTGTCTGAACTGGAGGACCGTGATTACGATAGACTCATTTCACCTGTACTGAACGAAAATAACATTTTTTATGACAGCGCGAAAGCGGGGGATGCACTTCCTAAGGATGCCGATGCAAATGGTGCGTATTGTATTGCATTAAAAGGGTTATATGAAATTAAACAAATTACCGAAAATTGGAAAGAAGATGGTAAATTTTCGCGCGATAAACTCAAAATCAGCAATAAAGATTGGTTCGACTTTATCCAGAATAAGCGCTATCTCTCTCGAGCCGACCCCAAGAAGAAGCGAAAGGTGTAA')
-    # ylmad = ecmad.optimize_codon_usage(table=default_table)
+    # mad = Nucleotide('mad', 'ATGAACAACGGCACAAATAATTTTCAGAACTTCATCGGGATCTCAAGTTTGCAGAAAACGCTGCGCAATGCTCTGATCCCCACGGAAACCACGCAACAGTTCATCGTCAAGAACGGAATAATTAAAGAAGATGAGTTACGTGGCGAGAACCGCCAGATTCTGAAAGATATCATGGATGACTACTACCGCGGATTCATCTCTGAGACTCTGAGTTCTATTGATGACATAGATTGGACTAGCCTGTTCGAAAAAATGGAAATTCAGCTGAAAAATGGTGATAATAAAGATACCTTAATTAAGGAACAGACAGAGTATCGGAAAGCAATCCATAAAAAATTTGCGAACGACGATCGGTTTAAGAACATGTTTAGCGCCAAACTGATTAGTGACATATTACCTGAATTTGTCATCCACAACAATAATTATTCGGCATCAGAGAAAGAGGAAAAAACCCAGGTGATAAAATTGTTTTCGCGCTTTGCGACTAGCTTTAAAGATTACTTCAAGAACCGTGCAAATTGCTTTTCAGCGGACGATATTTCATCAAGCAGCTGCCATCGCATCGTCAACGACAATGCAGAGATATTCTTTTCAAATGCGCTGGTCTACCGCCGGATCGTAAAATCGCTGAGCAATGACGATATCAACAAAATTTCGGGCGATATGAAAGATTCATTAAAAGAAATGAGTCTGGAAGAAATATATTCTTACGAGAAGTATGGGGAATTTATTACCCAGGAAGGCATTAGCTTCTATAATGATATCTGTGGGAAAGTCAATTCTTTTATGAACCTGTATTGTCAGAAAAATAAAGAAAACAAAAATTTATACAAACTTCAGAAACTTCACAAACAGATTCTATGCATTGCGGACACTAGCTATGAGGTCCCGTATAAATTTGAAAGTGACGAGGAAGTGTACCAATCAGTTAACGGCTTCCTTGATAACATTAGCAGCAAACATATAGTCGAAAGATTACGCAAAATCGGCGATAACTATAACGGCTACAACCTGGATAAAATTTATATCGTGTCCAAATTTTACGAGAGCGTTAGCCAAAAAACCTACCGCGACTGGGAAACAATTAATACCGCCCTCGAAATTCATTACAATAATATCTTGCCGGGTAACGGTAAAAGTAAAGCCGACAAAGTAAAAAAAGCGGTTAAGAATGATTTACAGAAATCCATCACCGAAATAAATGAACTAGTGTCAAACTATAAGCTGTGCAGTGACGACAACATCAAAGCGGAGACTTATATACATGAGATTAGCCATATCTTGAATAACTTTGAAGCACAGGAATTGAAATACAATCCGGAAATTCACCTAGTTGAATCCGAGCTCAAAGCGAGTGAGCTTAAAAACGTGCTGGACGTGATCATGAATGCGTTTCATTGGTGTTCGGTTTTTATGACTGAGGAACTTGTTGATAAAGACAACAATTTTTATGCGGAACTGGAGGAGATTTACGATGAAATTTATCCAGTAATTAGTCTGTACAACCTGGTTCGTAACTACGTTACCCAGAAACCGTACAGCACGAAAAAGATTAAATTGAACTTTGGAATACCGACGTTAGCAGACGGTTGGTCAAAGTCCAAAGAGTATTCTAATAACGCTATCATACTGATGCGCGACAATCTGTATTATCTGGGCATCTTTAATGCGAAGAATAAACCGGACAAGAAGATTATCGAGGGTAATACGTCAGAAAATAAGGGTGACTACAAAAAGATGATTTATAATTTGCTCCCGGGTCCCAACAAAATGATCCCGAAAGTTTTCTTGAGCAGCAAGACGGGGGTGGAAACGTATAAACCGAGCGCCTATATCCTAGAGGGGTATAAACAGAATAAACATATCAAATCTTCAAAAGACTTTGATATCACTTTCTGTCATGATCTGATCGACTACTTCAAAAACTGTATTGCAATTCATCCCGAGTGGAAAAACTTCGGTTTTGATTTTAGCGACACCAGTACTTATGAGGACATTTCCGGGTTTTATCGTGAGGTAGAGTTACAAGGTTACAAGATTGATTGGACATACATTAGCGAAAAAGACATTGATCTGCTGCAGGAAAAAGGTCAACTGTATCTGTTCCAGATATATAACAAAGATTTTTCGAAAAAATCAACCGGGAATGACAACCTTCACACCATGTACCTGAAAAATCTTTTCTCAGAAGAAAATCTTAAGGATATCGTCCTGAAACTTAACGGCGAAGCGGAAATCTTCTTCAGGAAGAGCAGCATAAAGAACCCAATCATTCATAAAAAAGGCTCGATTTTAGTCAACCGTACCTACGAAGCAGAAGAAAAAGACCAGTTTGGCAACATTCAAATTGTGCGTAAAAATATTCCGGAAAACATTTATCAGGAGCTGTACAAATACTTCAACGATAAAAGCGACAAAGAGCTGTCTGATGAAGCAGCCAAACTGAAGAATGTAGTGGGACACCACGAGGCAGCGACGAATATAGTCAAGGACTATCGCTACACGTATGATAAATACTTCCTTCATATGCCTATTACGATCAATTTCAAAGCCAATAAAACGGGTTTTATTAATGATAGGATCTTACAGTATATCGCTAAAGAAAAAGACTTACATGTGATCGGCATTGATCGGGGCGAGCGTAACCTGATCTACGTGTCCGTGATTGATACTTGTGGTAATATAGTTGAACAGAAAAGCTTTAACATTGTAAACGGCTACGACTATCAGATAAAACTGAAACAACAGGAGGGCGCTAGACAGATTGCGCGGAAAGAATGGAAAGAAATTGGTAAAATTAAAGAGATCAAAGAGGGCTACCTGAGCTTAGTAATCCACGAGATCTCTAAAATGGTAATCAAATACAATGCAATTATAGCGATGGAGGATTTGTCTTATGGTTTTAAAAAAGGGCGCTTTAAGGTCGAACGGCAAGTTTACCAGAAATTTGAAACCATGCTCATCAATAAACTCAACTATCTGGTATTTAAAGATATTTCGATTACCGAGAATGGCGGACTCCTGAAAGGTTATCAGCTGACATACATTCCTGATAAACTTAAAAACGTGGGTCATCAGTGCGGCTGCATTTTTTATGTGCCTGCTGCATACACGAGCAAAATTGATCCGACCACCGGCTTTGTGAATATCTTTAAATTTAAAGACCTGACAGTGGACGCAAAACGTGAGTTCATTAAAAAATTTGACTCAATTCGTTATGACAGTGAAAAAAATCTGTTCTGCTTTACATTTGACTACAATAACTTTATTACGCAAAACACGGTCATGAGCAAATCATCGTGGAGTGTGTATACATACGGCGTGCGCATCAAACGTCGCTTTGTGAACGGCCGCTTCTCAAACGAAAGTGATACCATTGACATAACCAAAGATATGGAGAAAACGTTGGAAATGACGGACATTAACTGGCGCGATGGCCACGATCTTCGTCAAGACATTATAGATTATGAAATTGTTCAGCACATATTCGAAATTTTCCGTTTAACAGTGCAAATGCGTAACTCCTTGTCTGAACTGGAGGACCGTGATTACGATAGACTCATTTCACCTGTACTGAACGAAAATAACATTTTTTATGACAGCGCGAAAGCGGGGGATGCACTTCCTAAGGATGCCGATGCAAATGGTGCGTATTGTATTGCATTAAAAGGGTTATATGAAATTAAACAAATTACCGAAAATTGGAAAGAAGATGGTAAATTTTCGCGCGATAAACTCAAAATCAGCAATAAAGATTGGTTCGACTTTATCCAGAATAAGCGCTATCTCTCTCGAGCCGACCCCAAGAAGAAGCGAAAGGTGTAA')
+    # ylmad = ecmad.optimize_codon_usage(table=DEFAULT_TABLE)
     # ylmadm = ecmad.optimize_codon_usage(maximum=True)
     # scmad = ecmad.optimize_codon_usage(table=yeast_table)
-    # ylmad1 = ecmad.special_optimize(table_source=source_table)
-    # scmad1 = ecmad.special_optimize(table=yeast_table, table_source=source_table)
+    ylmad1 = ecmad.harmonize(table_source=source_table)
+    # scmad1 = ecmad.harmonize(table=yeast_table, table_source=source_table)
     # comp = []
-    mad.draw_graph()
-    # ylmad.draw_graph(scmad)
-    # scmad.draw_graph(ylmad)
-    # ylmadm.draw_graph(ecmad)
-    # ecmad.draw_graph(ylmad, table=source_table)
-    # ecmad.draw_graph(ylmad)
+    # mad.graph_codon_usage()
+    # scmad1.graph_codon_usage()
+    # ylmad.graph_codon_usage(scmad)
+    # scmad.graph_codon_usage(ylmad)
+    # ylmadm.graph_codon_usage(ecmad)
+    # ecmad.graph_codon_usage(ylmad, table=source_table)
+    # ecmad.graph_codon_usage(ylmad)
+    # ylmad1.graph_harmonization(ecmad, other_id='ecoli')
+    # ylmad1.graph_codon_usage(other=ecmad, other_id='ecoli')
+    # ylmad1.graph_codon_usage(other=ecmad)
+    ylmad1.graph_codon_usage()
+
+    # print(sum(yeast_table['Number']))
+    # print(source_table)
+
+    # ty = DEFAULT_TABLE.reset_index(level='Triplet')
+
+    # data = []
+
+    # for triplet in test_dna2.make_triplets():
+    #     row = ty[ty['Triplet'] == triplet]
+    #     amino = row.index[0]
+    #     freq = row['Frequency'][0]
+
+    #     codons = DEFAULT_TABLE.loc[amino]
+
+    #     data.append((freq, max(codons.Frequency), min(codons.Frequency), sum(codons.Frequency)/len(codons)))
+
+    # new_data = []
+    # window = 16
+    # for n in range(len(data)+1-window):
+    #     temp = data[n:n+window]
+    #     actual = sum([f[0] for f in temp]) / window
+    #     maximum = sum([f[1] for f in temp]) / window
+    #     minimum = sum([f[2] for f in temp]) / window
+    #     average = sum([f[3] for f in temp]) / window
+
+    #     maxi = ((actual - average) / (maximum - average)) * 100
+    #     mini = ((average - actual) / (average - minimum)) * 100
+
+    #     # print(f'maxi: {maxi:.1f} | mini: {mini:.1f}')
+
+    #     if maxi > 0:
+    #         new_data.append(maxi)
+    #     elif mini > 0:
+    #         new_data.append(-mini)
+
+    # nnnn = pandas.DataFrame(test_dna2.minmax(), columns=['MinMax'])
+    
+    # print(nnnn)
+    # nnnn.plot()
+    # plt.show()
+
+
 
     # # for source_triplet, new_triplet in zip(test_dna2.make_triplets(), test_dna2_opt.make_triplets()):
     # for source_triplet, new_triplet in zip(ecmad.make_triplets(), ylmad1.make_triplets()):
@@ -948,26 +1254,11 @@ if __name__ == '__main__':
     # tab.plot(y=['native', 'new'])
     # plt.show()
 
-    a = 1
-    b = 2
-    c = 3
+    # r = 20
+    # q = 4
 
-    if a == 1:
-        print('a == 1')
-    
-    if False:
-        print('False')
-    elif True:
-        if b == 2:
-            print('b == 2')
-            pass
-        else:
-            print('else gets printed after pass')
-    else:
-        print('end')
-    
-    # if c == 3:
-    #     continue
-    # else:
-    #     print('c == 3')
-    
+    # t = [x for x in range(r)]
+
+    # for a in range(r-q+1):
+    #     b = t[a:a+q]
+    #     print(b)

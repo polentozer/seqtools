@@ -1,4 +1,11 @@
 #cSpell: Disable#
+COMMON_SPECIES = {
+    'ecoli': '83333',
+    'yeast':  '4932',
+    'human': '9606',
+    'bsub': '1432',
+    'yali': '284591'}
+
 GGA_PART_TYPES = {
     'type1': {
         'prefix': 'GCATCGTCTCATCGGAGTCGGTCTCACCCT',
@@ -165,7 +172,7 @@ LOGGING_CONFIG = {
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
-            'level': 'DEBUG',
+            'level': 'INFO',
             'formatter': 'simple',
             'stream': 'ext://sys.stdout',
         },

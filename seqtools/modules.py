@@ -3,11 +3,12 @@ import re
 import pandas
 import logging
 import matplotlib.pyplot as plt
-from seqtools.seqtools_config import GGA_PART_TYPES, LOGGING_CONFIG
+from seqtools.seqtools_config import GGA_PART_TYPES, LOGGING_CONFIG, COMMON_SPECIES
 from seqtools.util import bool_user_prompt, sequence_match, get_codon, load_codon_table
 
 ## LEGACY ##
 DEFAULT_TABLE = load_codon_table(species='yali')
+plt.style.use('seaborn-deep')
 
 
 class Sequence:
@@ -159,7 +160,7 @@ class Nucleotide(Sequence):
     def make_triplets(self):
         '''Makes list of chunks 3 characters long from a sequence'''
         self.logger.debug('Making triplets...')
-        return [self.sequence[start:start + 3] for start in range(0, len(self.sequence), 3)]
+        return [self.sequence[start:start+3] for start in range(0, len(self.sequence), 3)]
 
     def melting_temperature(self):
         '''Calculate and return the Tm using the "Wallace rule".
@@ -294,7 +295,7 @@ class Nucleotide(Sequence):
 
         return Nucleotide(seq_id, sequence)
     
-    def source_optimize(self, source_table, mode=0, table=DEFAULT_TABLE):
+    def harmonize(self, source_table, mode=0, table=DEFAULT_TABLE):
         '''Optimize codon usage of a given DNA sequence
         mode: 0 for closest frequency; 1 for same index'''
         self.logger.debug('Starting special optimization using source codon table...')
@@ -342,59 +343,131 @@ class Nucleotide(Sequence):
         
         return Nucleotide(f'{seq_id}|SOPT{mode}', ''.join(optimized))
     
-    def graph_codon_usage(self, window=10, other=None, table=DEFAULT_TABLE):
-        '''Graph codon frequency of a given gene'''
-        only_self = False
-        data, reduced_data, temp = [], [], []
+    def data_fraction(self, table=DEFAULT_TABLE, window=16):
+        '''Calculates average window codon fraction for a given sequence and codon usage table.
+        Returns a list of window-fraction values, which can be used for analysis or ploted.'''
+
+        values, data = [], []
         codons = table.reset_index().set_index(['Triplet'])
 
+        for triplet in self.make_triplets():
+            values.append(codons.loc[triplet]['Fraction'])
+
+        for n in range(len(values)+1-window):
+            data.append(sum([f for f in values[n:n+window]]) / window)
+
+        return data
+    
+    def data_minmax(self, table=DEFAULT_TABLE, window=16):
+        '''Calculates the %MinMax values for a given sequence and codon usage table.
+        Returns a list of %MinMax values, which can be used for analysis or ploted.
+
+        Reference:
+        Clarke TF IV, Clark PL (2008) Rare Codons Cluster. PLoS ONE 3(10): e3412.
+        doi:10.1371/journal.pone.0003412'''
+
+        tri_table = table.reset_index(level='Triplet')
+        values, data = [], []
+
+        for triplet in self.make_triplets():
+            freq = tri_table[tri_table['Triplet'] == triplet]['Frequency'][0]
+            codons = table.loc[tri_table[tri_table['Triplet'] == triplet].index[0]]
+
+            values.append((freq, max(codons.Frequency), min(codons.Frequency), sum(codons.Frequency)/len(codons)))
+
+        for n in range(len(values)+1-window):
+            temp = values[n:n+window]
+            actual = sum([f[0] for f in temp]) / window
+            maximum = sum([f[1] for f in temp]) / window
+            minimum = sum([f[2] for f in temp]) / window
+            average = sum([f[3] for f in temp]) / window
+
+            maxi = ((actual - average) / (maximum - average)) * 100
+            mini = ((average - actual) / (average - minimum)) * 100
+
+            if maxi > 0:
+                data.append(maxi)
+            elif mini > 0:
+                data.append(-mini)
+        
+        return data
+    
+    def graph_codon_usage(self, window=16, other=None, other_id=None, table=DEFAULT_TABLE, minmax=True, target='Yarrowia lipolytica'):
+        '''Graph codon frequency of a given gene'''
+
         if not self.basic_cds:
-            self.logger.error(f'{self.sequence_id} is not a CDS. Skipping operation...')
             return
 
-        elif other:
-            if not isinstance(other, Nucleotide) or not other.basic_cds:
-                self.logger.error(f'{other.sequence_id} is not a CDS. Skipping to graphing only {self.sequence_id}...')
-                only_self = True
-                pass
+        if isinstance(other, Nucleotide) and other.basic_cds:
+            if other_id:
+                if other_id in COMMON_SPECIES:
+                    other_id = COMMON_SPECIES[other_id]
+                table_other, species = load_codon_table(taxonomy_id=other_id, return_name=True)
             else:
-                self.logger.info(f'Graphing codon usage for {self.sequence_id} and {other.sequence_id}')
-                for self_triplet, other_triplet in zip(self.make_triplets(), other.make_triplets()):
+                table_other = table
+            if minmax:
+                data = [x for x in zip(self.data_minmax(table=table, window=window), other.data_minmax(table=table_other, window=window))]
+            else:
+                data = [x for x in zip(self.data_fraction(table=table, window=window), other.data_fraction(table=table_other, window=window))]
+        else:
+            if minmax:
+                data = self.data_minmax(table=table, window=window)
+            else:
+                data = self.data_fraction(table=table, window=window)
 
-                    self_freq = codons.loc[self_triplet]['Fraction']
-                    other_freq = codons.loc[other_triplet]['Fraction']
+        x = range(len(data))
+        zeros = [0 for i in x]
 
-                    data.append((self_freq, other_freq))
+        if other:
+            y1 = [i[0] for i in data]
+            y2 = [i[1] for i in data]
+            _, (ax0, ax1) = plt.subplots(2, 1, sharex=True, figsize=(12, 5))
+            plt.subplots_adjust(left=.08, right=0.98, hspace=.5)
 
-                while data:
-                    frequency = data[0]
-                    if (len(temp) == window or len(data) < window) and temp:
-                        self_window_frequency = sum([f[0] for f in temp]) / len(temp)
-                        other_window_frequency = sum([f[1] for f in temp]) / len(temp)
-                        reduced_data.append((self_window_frequency, other_window_frequency))
-                        temp = []
-                    temp.append(frequency)
-                    data.pop(0)
+            ax0.plot(x, y1, alpha=0.8, linewidth=.5)
+            ax0.set_title(f'Codon usage plot for {self.sequence_id} in {target}')
 
-                frequency_table = pandas.DataFrame(reduced_data, columns=['self', 'other'])
+            if minmax:
+                ax0.set_ylim(-100, 100)
+                ax0.axhline(0, color='black', linewidth=.5)
+                ax0.fill_between(x, y1, zeros, where=[True if y > 0 else False for y in y1], alpha=0.5, interpolate=True, color='C0')
+                ax0.fill_between(x, y1, zeros, where=[True if y < 0 else False for y in y1], alpha=0.5, interpolate=True, color='C2')
+                ax0.set_ylabel('%MinMax Value')
+            else:
+                ax0.set_ylabel('Fraction')
 
-        if not other or only_self:
-            self.logger.info(f'Graphing codon usage for {self.sequence_id}')
-            for self_triplet in self.make_triplets():
-                data.append(codons.loc[self_triplet]['Fraction'])
+            if other_id:
+                target = species
 
-            while data:
-                frequency = data[0]
-                if (len(temp) == window or len(data) < window) and temp:
-                    self_window_frequency = sum([f for f in temp]) / len(temp)
-                    reduced_data.append(self_window_frequency)
-                    temp = []
-                temp.append(frequency)
-                data.pop(0)
+            ax1.plot(x, y2, alpha=0.8, linewidth=.5)
+            ax1.set_title(f'Codon usage plot for {other.sequence_id} in {target}')
 
-            frequency_table = pandas.DataFrame(reduced_data, columns=['self'])
+            if minmax:
+                ax1.set_ylim(-100, 100)
+                ax1.axhline(0, color='black', linewidth=.5)
+                ax1.fill_between(x, y2, zeros, where=[True if y > 0 else False for y in y2], alpha=0.5, interpolate=True, color='C0')
+                ax1.fill_between(x, y2, zeros, where=[True if y < 0 else False for y in y2], alpha=0.5, interpolate=True, color='C2')
+                ax1.set_ylabel('%MinMax Value')
+            else:
+                ax1.set_ylabel('Fraction')
 
-        frequency_table.plot()
+        else:
+            _, ax = plt.subplots(1, 1, figsize=(12, 2))
+            plt.subplots_adjust(left=.08, right=0.98, bottom=.25)
+            ax.plot(x, data, alpha=0.8, linewidth=.5)
+            ax.set_title(f'Codon usage plot for {self.sequence_id} in {target}')
+
+            if minmax:
+                ax.set_ylim(-100, 100)
+                ax.axhline(0, color='black', linewidth=.5)
+                ax.fill_between(x, data, zeros, where=[True if y > 0 else False for y in data], alpha=0.5, interpolate=True, color='C0')
+                ax.fill_between(x, data, zeros, where=[True if y < 0 else False for y in data], alpha=0.5, interpolate=True, color='C2')
+                ax.set_ylabel('%MinMax Value')
+            else:
+                ax.set_ylabel('Fraction')
+
+        plt.xlim(-4, len(data)+4)
+        plt.xlabel('Codon No.')
         plt.show()
 
         return

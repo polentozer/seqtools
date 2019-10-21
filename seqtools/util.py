@@ -5,18 +5,11 @@ import pandas
 from random import random
 from seqtools.cli import logger
 from distutils.util import strtobool
-from seqtools.seqtools_config import LOGGING_CONFIG
+from seqtools.seqtools_config import LOGGING_CONFIG, COMMON_SPECIES
 
 
 CODON_USAGE_DB = f'{os.path.dirname(__file__)}/data/codon_usage.spsum'
 CUSTOM_CODON_USAGE_DB = f'{os.path.dirname(__file__)}/data/custom_table.spsum'
-
-COMMON_SPECIES = {
-    'ecoli': '83333',
-    'yeast':  '4932',
-    'human': '9606',
-    'bsub': '1432',
-    'yali': '284591'}
 
 CODONS = [
     'CGA', 'CGC', 'CGG', 'CGT', 'AGA', 'AGG', 'CTA', 'CTC',
@@ -84,7 +77,7 @@ def sequence_match(string, search):
     return not bool(search(string))
 
 
-def load_codon_table(species=None, taxonomy_id=None, custom=False):
+def load_codon_table(species=None, taxonomy_id=None, custom=False, return_name=False):
     '''Load a codon table based on the organism's species ID'''
     logger.debug(f'load_codon_table(species={species}, taxonomy_id={taxonomy_id}, custom={custom})')
 
@@ -113,9 +106,14 @@ def load_codon_table(species=None, taxonomy_id=None, custom=False):
             table = pandas.DataFrame(table, columns=['Triplet', 'AA', 'Number'])
             table.set_index(['AA', 'Triplet'], inplace=True)
             table.sort_index(inplace=True)
+            total = sum(table['Number'])
 
             table['Fraction'] = table.groupby('AA').transform(lambda x: x / x.sum())
+            table['Frequency'] = table['Number'] / total * 1000
             break
+    
+    if return_name:
+        return table, species
 
     return table
 
