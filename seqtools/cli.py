@@ -132,7 +132,7 @@ def cli_argparser():
     sequence_input = transform.add_mutually_exclusive_group()
     table_input = transform.add_mutually_exclusive_group()
     maniputaion = transform.add_mutually_exclusive_group()
-    graph = transform.add_mutually_exclusive_group()
+    graph = transform.add_argument_group()
     maniputaion.add_argument(
         '-O', '--optimize', action='store_true', default=False, required=False,
         help='Use this flag to change output to optimized DNA sequences')
@@ -329,7 +329,7 @@ def main():
                         target_organism=target_organism,
                         file_output=args.output)
 
-            elif args.graph_optimized:
+            if args.graph_optimized:
                 logger.info('Drawing graphs...')
                 for seq_original, seq_optimized in zip(sequences, target):
                     logger.debug(
@@ -341,7 +341,7 @@ def main():
                         target_organism=target_organism,
                         file_output=args.output)
             
-            elif args.graph_harmonized and args.harmonize:
+            if args.graph_harmonized and args.harmonize:
                 logger.info('Drawing graphs...')
                 for seq_original, seq_optimized in zip(sequences, target):
                     logger.debug(

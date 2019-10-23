@@ -25,7 +25,7 @@ OTHER
 -[ ] write better manual
 -[ ] genbank (gb) input files
 -[ ] extend reverse translation to incorporate extended DNA symbols
--[ ] detecting protein/dna sequences if no -p flag is given
+-[ ] autodetecting protein/dna sequences
 
 
 

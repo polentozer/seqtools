@@ -13,12 +13,6 @@ Requirements
     * pyperclip
     * matplotlib
 
-Codon usage table should be provided in a `.csv` file in the following format:
-
-    aminoacid,dna_triplet,value
-    aminoacid,dna_triplet,value
-    aminoacid,dna_triplet,value
-
 
 Installation
 ------------
@@ -33,12 +27,51 @@ Usage
 
 Translate DNA sequence to protein sequence using genetic code table provided in the default table and print the output
 
-    $seqtools -i test_data/sample_dna.fasta
+    $seqtools trans -i ">sample
+    ATGAGAAAGGGTGAGGAGCTGTTTACAGGCGTTGTGCCCATCCTTGTGGAGCTTGACGG
+    CGATGTCAACGGTCATAAGTTCTCCGTTCGAGGAGAAGGCGAGGGTGATGCCACCAACG
+    GAAAGCTCACCCTTAAGTTCATCTGCACTACCGGTAAGCTGCCCGTGCCTTGGCCTACC
+    CTGGTCACCACTCTCACCTATGGTGTGCAGTGCTTCGCCCGATACCCCGATCACATGAA
+    GCAGCATGACTTTTTTAAGTCTGCCATGCCTGAAGGCTACGTCCAGGAGCGAACCATCT
+    CTTTCAAGGATGATGGAACCTACAAGACCCGAGCTGAGGTCAAGTTTGAGGGTGATACT
+    CTGGTCAACCGAATCGAGCTGAAGGGAATTGATTTTAAGGAGGATGGAAACATCCTCGG" -T
 
-Reverse-translate and codon-optimize a protein sequence and print the output
+    $seqtools trans -i ATGAGAAAGGGTGAGGAG -T
 
-    $seqtools -t test_data/sample_table.csv -i test_data/sample_prot.fasta -p
+    $seqtools trans -f sample.fasta -T
 
-Codon-optimize a DNA sequence and save the output to a file
+Translate DNA sequence to protein sequence using genetic code table provided in the default table and produce output file
 
-    $seqtools -O -t test_data/sample_table.csv -i test_data/sample_dna.fasta  -o test.fasta
+    $seqtools trans -i ATGAGAAAGGGTGAGGAG -T -o
+
+Optimize DNA sequence to a specified organism (default = Yarrowia lipolytica)
+
+    $seqtools trans -i ATGAGAAAGGGTGAGGAG -O -on yali
+
+Optimize DNA sequence to a specified organism (default = Yarrowia lipolytica) and change sequence to part type 3a
+
+    $seqtools trans -i ATGAGAAAGGGTGAGGAG -O -oi 83333 -t 3a
+
+Optimize DNA sequence to a specified organism (default = Yarrowia lipolytica) and draw graph for optimized and non-optimized sequence
+
+    $seqtools trans -i ATGAGAAAGGGTGAGGAG -O -on ecoli -G
+
+Harmonize DNA sequence to a source organism and draw graph for harmonized sequence
+
+    $seqtools trans -f sample.fasta -H ecoli -on bsub -g
+
+Harmonize DNA sequence to a source organism and produce output file and graphs
+
+    $seqtools trans -f sample.fasta -H ecoli -on human -o -gh
+
+Reverse translate protein sequence (codons chosen based on specified organism; default = Yarrowia lipolytica)
+
+    $seqtools trans -i "MARKAPHID*" -on yeast
+
+Generate 300 bp DNA sequence
+
+    $seqtools gen 300
+
+Generate 300 aa protein sequence
+
+    $seqtools gen 300 -P
