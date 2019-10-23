@@ -818,7 +818,7 @@ class Nucleotide(Sequence):
                 ax.set_ylabel('Fraction')
 
         plt.xlim(-4, len(data)+4)
-        plt.xlabel('Codon No.')
+        plt.xlabel('Codon')
         plt.show()
 
         return
@@ -1159,7 +1159,7 @@ if __name__ == '__main__':
     # ylmad = ecmad.optimize_codon_usage(table=DEFAULT_TABLE)
     # ylmadm = ecmad.optimize_codon_usage(maximum=True)
     # scmad = ecmad.optimize_codon_usage(table=yeast_table)
-    ylmad1 = ecmad.harmonize(table_source=source_table)
+    # ylmad1 = ecmad.harmonize(table_source=source_table)
     # scmad1 = ecmad.harmonize(table=yeast_table, table_source=source_table)
     # comp = []
     # mad.graph_codon_usage()
@@ -1172,7 +1172,9 @@ if __name__ == '__main__':
     # ylmad1.graph_harmonization(ecmad, other_id='ecoli')
     # ylmad1.graph_codon_usage(other=ecmad, other_id='ecoli')
     # ylmad1.graph_codon_usage(other=ecmad)
-    ylmad1.graph_codon_usage()
+    # ylmad1.graph_codon_usage()
+    # ylmad.graph_codon_usage()
+    # ecmad.graph_codon_usage()
 
     # print(sum(yeast_table['Number']))
     # print(source_table)
@@ -1262,3 +1264,27 @@ if __name__ == '__main__':
     # for a in range(r-q+1):
     #     b = t[a:a+q]
     #     print(b)
+
+    # for k in GGA_PART_TYPES.keys():
+    #     print(k[4:])
+    
+    if '3a' in [k[4:] for k in GGA_PART_TYPES.keys()]:
+        print('True')
+    
+    x = '''>sfGFP
+ATGAGAAAGGGTGAGGAGCTGTTTACAGGCGTTGTGCCCATCCTTGTGGAGCTTGACGG
+CGATGTCAACGGTCATAAGTTCTCCGTTCGAGGAGAAGGCGAGGGTGATGCCACCAACG
+GAAAGCTCACCCTTAAGTTCATCTGCACTACCGGTAAGCTGCCCGTGCCTTGGCCTACC
+CTGGTCACCACTCTCACCTATGGTGTGCAGTGCTTCGCCCGATACCCCGATCACATGAA
+GCAGCATGACTTTTTTAAGTCTGCCATGCCTGAAGGCTACGTCCAGGAGCGAACCATCT
+CTTTCAAGGATGATGGAACCTACAAGACCCGAGCTGAGGTCAAGTTTGAGGGTGATACT
+CTGGTCAACCGAATCGAGCTGAAGGGAATTGATTTTAAGGAGGATGGAAACATCCTCGG
+TCACAAGCTGGAGTACAACTTCAACTCCCACAACGTCTACATCACCGCTGATAAGCAGA
+AGAACGGAATTAAGGCTAACTTCAAGATTCGACACAATGTCGAAGACGGTTCCGTTCAG
+CTCGCTGACCACTACCAGCAGAACACTCCTATTGGTGACGGACCCGTCCTGCTGCCCGA
+CAACCATTACCTCTCGACCCAGTCGGTCCTTTCTAAGGACCCTAACGAGAAGCGAGATC
+ACATGGTCCTTCTGGAGTTCGTCACTGCCGCTGGAATTACCCACGGCATGGATGAGCTT
+TACAAG'''
+
+for line in x.splitlines():
+    print(line)

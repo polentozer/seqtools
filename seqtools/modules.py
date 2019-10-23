@@ -1,4 +1,5 @@
 #cSpell: Disable#
+import os
 import re
 import pandas
 import logging
@@ -67,8 +68,7 @@ class Protein(Sequence):
     def sequence(self, string):
         allowed_characters = re.compile(r'[^\*\?GALMFWKQESPVICYHRNDTX]')
         if not sequence_match(string, allowed_characters.search):
-            self.logger.error('Protein sequence includes unallowed character(s)')
-            raise ValueError
+            raise ValueError(f'Protein sequence includes unallowed character(s):\n{string}')
         self._sequence = string
 
     def reverse_translate(self, table=DEFAULT_TABLE, maximum=False):
@@ -94,8 +94,8 @@ class Protein(Sequence):
 class Nucleotide(Sequence):
     '''NUCLEOTIDE sequence object'''
 
-    def __init__(self, sequence_id, sequence):
-        super().__init__(sequence_id, sequence)
+    def __init__(self, sequence_id, sequence, logger=None):
+        super().__init__(sequence_id, sequence, logger)
 
     def __add__(self, other):
         return Nucleotide('concat', self.sequence + other.sequence)
@@ -111,8 +111,7 @@ class Nucleotide(Sequence):
     def sequence(self, string):
         allowed_characters = re.compile(r'[^ACTGNUSW]')
         if not sequence_match(string, allowed_characters.search):
-            self.logger.error('Nucleotide sequence includes unallowed character(s)')
-            raise ValueError
+            raise ValueError(f'Nucleotide sequence includes unallowed character(s):\n{string}')
         self._sequence = string
 
     @property
@@ -206,12 +205,14 @@ class Nucleotide(Sequence):
         for nucleotide in 'ACGT':
             self.logger.info(f'Checking "{nucleotide}" homopolymer')
             if nucleotide * 11 in self.sequence:
-                self.logger.warning(f'ID "{self.sequence_id}" failed on long "{nucleotide}" homopolymer')
+                self.logger.warning(
+                    f'ID "{self.sequence_id}" failed on long "{nucleotide}" homopolymer')
             else:
                 self.logger.info("pass")
         self.logger.info(f'Checking for unknown base pairs')
         if 'N' in self.sequence:
-            self.logger.warning(f'ID "{self.sequence_id}" failed on "N" (unknown base pair) in sequence')
+            self.logger.warning(
+                f'ID "{self.sequence_id}" failed on "N" (unknown base pair) in sequence')
         else:
                 self.logger.info("pass")
         self.logger.info(f'Checking BsaI restriction sites')
@@ -304,7 +305,8 @@ class Nucleotide(Sequence):
             if 'FORCED' not in self.sequence_id:
                 return self
         
-        self.logger.info(f'Special optimization: {"closest frequency" if mode == 0 else "same index"}')
+        self.logger.info(
+            f'Special optimization: {"closest frequency" if mode == 0 else "same index"}')
 
         seq_id = self.sequence_id
         optimized = list()
@@ -316,24 +318,25 @@ class Nucleotide(Sequence):
             else:
                 codons = table.loc[amino]
                 source_codons = source_table.loc[amino]
-                sorted_codons_freq = sorted(codons['Fraction'])
-                source_codon_freq = source_codons.loc[triplet]['Fraction']
+                sorted_codons_frac = sorted(codons['Fraction'])
+                source_codon_frac = source_codons.loc[triplet]['Fraction']
 
                 if mode == 0:
                     best, freq = 1, 0
-                    for cod in sorted_codons_freq:
-                        current_best = abs(cod - source_codon_freq)
+                    for cod in sorted_codons_frac:
+                        current_best = abs(cod - source_codon_frac)
                         if current_best < best:
                             best, freq = current_best, cod
 
                     closest_freq_codon = codons[codons['Fraction'] == freq].index[0]
-                    self.logger.info(f'{triplet} (f:{source_codon_freq:.3f}) --> {closest_freq_codon} (f:{freq:.3f})')
+                    self.logger.info(
+                        f'{triplet} (f:{source_codon_frac:.3f}) --> {closest_freq_codon} (f:{freq:.3f})')
                     optimized.append(closest_freq_codon)
                 
                 elif mode == 1:
                     sorted_source_codons = sorted(source_codons['Fraction'])
                     source_codon_index = sorted_source_codons.index(source_codons.loc[amino]['Fraction'])
-                    same_index_codon = codons[codons['Fraction'] == sorted_codons_freq[source_codon_index]].index[0]
+                    same_index_codon = codons[codons['Fraction'] == sorted_codons_frac[source_codon_index]].index[0]
                     self.logger.info(f'{triplet} --> {same_index_codon} (i:{source_codon_index})')
                     optimized.append(same_index_codon)
                 
@@ -341,11 +344,13 @@ class Nucleotide(Sequence):
                     self.logger.error('Unsupported mode, expected: 1 or 0. Skipping operation')
                     return self
         
-        return Nucleotide(f'{seq_id}|SOPT{mode}', ''.join(optimized))
+        return Nucleotide(f'{seq_id}|HARM{mode}', ''.join(optimized))
     
     def data_fraction(self, table=DEFAULT_TABLE, window=16):
         '''Calculates average window codon fraction for a given sequence and codon usage table.
         Returns a list of window-fraction values, which can be used for analysis or ploted.'''
+        self.logger.debug(
+            f'Calculating fraction values for {self.sequence_id} in {window} codon window...')
 
         values, data = [], []
         codons = table.reset_index().set_index(['Triplet'])
@@ -365,6 +370,8 @@ class Nucleotide(Sequence):
         Reference:
         Clarke TF IV, Clark PL (2008) Rare Codons Cluster. PLoS ONE 3(10): e3412.
         doi:10.1371/journal.pone.0003412'''
+        self.logger.debug(
+            f'Calculating %MinMax values for {self.sequence_id} in {window} codon window...')
 
         tri_table = table.reset_index(level='Triplet')
         values, data = [], []
@@ -373,14 +380,17 @@ class Nucleotide(Sequence):
             freq = tri_table[tri_table['Triplet'] == triplet]['Frequency'][0]
             codons = table.loc[tri_table[tri_table['Triplet'] == triplet].index[0]]
 
-            values.append((freq, max(codons.Frequency), min(codons.Frequency), sum(codons.Frequency)/len(codons)))
+            values.append((freq,
+                           max(codons.Frequency),
+                           min(codons.Frequency),
+                           sum(codons.Frequency)/len(codons)))
 
         for n in range(len(values)+1-window):
-            temp = values[n:n+window]
-            actual = sum([f[0] for f in temp]) / window
-            maximum = sum([f[1] for f in temp]) / window
-            minimum = sum([f[2] for f in temp]) / window
-            average = sum([f[3] for f in temp]) / window
+            current = values[n:n+window]
+            actual = sum([f[0] for f in current]) / window
+            maximum = sum([f[1] for f in current]) / window
+            minimum = sum([f[2] for f in current]) / window
+            average = sum([f[3] for f in current]) / window
 
             maxi = ((actual - average) / (maximum - average)) * 100
             mini = ((average - actual) / (average - minimum)) * 100
@@ -392,13 +402,17 @@ class Nucleotide(Sequence):
         
         return data
     
-    def graph_codon_usage(self, window=16, other=None, other_id=None, table=DEFAULT_TABLE, minmax=True, target='Yarrowia lipolytica'):
+    def graph_codon_usage(self, window=16, other=None, other_id=None, table=DEFAULT_TABLE, 
+                          minmax=True, target_organism='Yarrowia lipolytica', file_output=False):
         '''Graph codon frequency of a given gene'''
 
         if not self.basic_cds:
+            self.logger.error('Graphing codon usage unsuccessful, sequence is not a CDS!')
             return
 
         if isinstance(other, Nucleotide) and other.basic_cds:
+            self.logger.debug(
+                f'calculating data for {self.sequence_id} and {other.sequence_id}...')
             if other_id:
                 if other_id in COMMON_SPECIES:
                     other_id = COMMON_SPECIES[other_id]
@@ -406,10 +420,15 @@ class Nucleotide(Sequence):
             else:
                 table_other = table
             if minmax:
-                data = [x for x in zip(self.data_minmax(table=table, window=window), other.data_minmax(table=table_other, window=window))]
+                data = [x for x in zip(
+                    self.data_minmax(table=table, window=window),
+                    other.data_minmax(table=table_other, window=window))]
             else:
-                data = [x for x in zip(self.data_fraction(table=table, window=window), other.data_fraction(table=table_other, window=window))]
+                data = [x for x in zip(
+                    self.data_fraction(table=table, window=window),
+                    other.data_fraction(table=table_other, window=window))]
         else:
+            self.logger.debug(f'calculating data for {self.sequence_id}...')
             if minmax:
                 data = self.data_minmax(table=table, window=window)
             else:
@@ -419,56 +438,75 @@ class Nucleotide(Sequence):
         zeros = [0 for i in x]
 
         if other:
+            self.logger.debug(f'Drawing graph for {self.sequence_id} and {other.sequence_id}...')
             y1 = [i[0] for i in data]
             y2 = [i[1] for i in data]
             _, (ax0, ax1) = plt.subplots(2, 1, sharex=True, figsize=(12, 5))
             plt.subplots_adjust(left=.08, right=0.98, hspace=.5)
 
             ax0.plot(x, y1, alpha=0.8, linewidth=.5)
-            ax0.set_title(f'Codon usage plot for {self.sequence_id} in {target}')
+            ax0.set_title(f'Codon usage plot for {self.sequence_id} in {target_organism}')
 
             if minmax:
                 ax0.set_ylim(-100, 100)
                 ax0.axhline(0, color='black', linewidth=.5)
-                ax0.fill_between(x, y1, zeros, where=[True if y > 0 else False for y in y1], alpha=0.5, interpolate=True, color='C0')
-                ax0.fill_between(x, y1, zeros, where=[True if y < 0 else False for y in y1], alpha=0.5, interpolate=True, color='C2')
+                ax0.fill_between(x, y1, zeros, where=[True if y > 0 else False for y in y1],
+                    alpha=0.5, interpolate=True, color='C0')
+                ax0.fill_between(x, y1, zeros, where=[True if y < 0 else False for y in y1],
+                    alpha=0.5, interpolate=True, color='C2')
                 ax0.set_ylabel('%MinMax Value')
             else:
                 ax0.set_ylabel('Fraction')
 
             if other_id:
-                target = species
+                target_organism = species
 
             ax1.plot(x, y2, alpha=0.8, linewidth=.5)
-            ax1.set_title(f'Codon usage plot for {other.sequence_id} in {target}')
+            ax1.set_title(f'Codon usage plot for {other.sequence_id} in {target_organism}')
 
             if minmax:
                 ax1.set_ylim(-100, 100)
                 ax1.axhline(0, color='black', linewidth=.5)
-                ax1.fill_between(x, y2, zeros, where=[True if y > 0 else False for y in y2], alpha=0.5, interpolate=True, color='C0')
-                ax1.fill_between(x, y2, zeros, where=[True if y < 0 else False for y in y2], alpha=0.5, interpolate=True, color='C2')
+                ax1.fill_between(x, y2, zeros, where=[True if y > 0 else False for y in y2],
+                    alpha=0.5, interpolate=True, color='C0')
+                ax1.fill_between(x, y2, zeros, where=[True if y < 0 else False for y in y2],
+                    alpha=0.5, interpolate=True, color='C2')
                 ax1.set_ylabel('%MinMax Value')
             else:
                 ax1.set_ylabel('Fraction')
 
         else:
+            self.logger.debug(f'Drawing graph for {self.sequence_id}...')
             _, ax = plt.subplots(1, 1, figsize=(12, 2))
             plt.subplots_adjust(left=.08, right=0.98, bottom=.25)
             ax.plot(x, data, alpha=0.8, linewidth=.5)
-            ax.set_title(f'Codon usage plot for {self.sequence_id} in {target}')
+            ax.set_title(f'Codon usage plot for {self.sequence_id} in {target_organism}')
 
             if minmax:
                 ax.set_ylim(-100, 100)
                 ax.axhline(0, color='black', linewidth=.5)
-                ax.fill_between(x, data, zeros, where=[True if y > 0 else False for y in data], alpha=0.5, interpolate=True, color='C0')
-                ax.fill_between(x, data, zeros, where=[True if y < 0 else False for y in data], alpha=0.5, interpolate=True, color='C2')
+                ax.fill_between(x, data, zeros, where=[True if y > 0 else False for y in data],
+                    alpha=0.5, interpolate=True, color='C0')
+                ax.fill_between(x, data, zeros, where=[True if y < 0 else False for y in data],
+                    alpha=0.5, interpolate=True, color='C2')
                 ax.set_ylabel('%MinMax Value')
             else:
                 ax.set_ylabel('Fraction')
 
         plt.xlim(-4, len(data)+4)
-        plt.xlabel('Codon No.')
-        plt.show()
+        plt.xlabel('Codon')
+
+        if not file_output:
+            plt.show()
+        else:
+            n = 0
+            fig_name = 'seqtools-graph.png'
+            while os.path.isfile(os.path.join(os.path.join(os.getcwd(), fig_name))):
+                fig_name = f'seqtools-graph-{n}.png'
+                n += 1
+            plt.savefig(os.path.join(os.path.join(os.getcwd(), fig_name)))
+            self.logger.info(
+                f'Codon usage plot for sequence {self.sequence_id} saved to {fig_name}')
 
         return
 
@@ -504,4 +542,5 @@ class Restriction_Enzyme(Enzyme):
     @property
     def cutsite_list(self):
         self.logger.debug('Generating cutsite_list from Restriction_Enzyme')
-        return [self.recognition_sequence.sequence, self.recognition_sequence.reverse_complement.sequence]
+        return [self.recognition_sequence.sequence,
+                self.recognition_sequence.reverse_complement.sequence]
